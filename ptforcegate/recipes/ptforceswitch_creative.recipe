@@ -1,0 +1,9 @@
+{
+  "input" : [
+  ],
+  "output" : {
+    "item" : "ptforceswitch",
+    "count" : 1
+  },
+  "groups" : [ "mod" ]
+}

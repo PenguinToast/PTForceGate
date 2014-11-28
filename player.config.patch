@@ -1,0 +1,6 @@
+[
+    { "op": "add", "path": "/defaultBlueprints/tier1/-", "value" : {"item" : "ptforcegate" } },
+    { "op": "add", "path": "/defaultBlueprints/tier1/-", "value" : {"item" : "ptwirerelay" } },
+    { "op": "add", "path": "/defaultBlueprints/tier1/-", "value" : {"item" : "ptforceswitchcompact" } },
+    { "op": "add", "path": "/defaultBlueprints/tier1/-", "value" : {"item" : "ptforceswitch" } }
+]

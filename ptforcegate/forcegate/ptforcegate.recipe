@@ -1,0 +1,11 @@
+{
+  "input" : [
+    { "item" : "laserdiode", "count" : 6 },
+    { "item" : "circuitboard", "count" : 2 }
+  ],
+  "output" : {
+    "item" : "ptforcegate",
+    "count" : 1
+  },
+  "groups" : [ "wiringstation", "all" ]
+}
