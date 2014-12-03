@@ -165,11 +165,6 @@ function applyForces()
                                  connection.forceRegion, connection.force)
       else -- Apply the force by self
         entity.setForceRegion(connection.forceRegion, connection.force)
-        local reg = connection.forceRegion
-        world.debugLine({reg[1], reg[2]}, {reg[1], reg[4]}, "red")
-        world.debugLine({reg[1], reg[4]}, {reg[3], reg[4]}, "red")
-        world.debugLine({reg[3], reg[2]}, {reg[3], reg[4]}, "red")
-        world.debugLine({reg[1], reg[2]}, {reg[3], reg[2]}, "red")
       end
     end
   end
@@ -373,17 +368,17 @@ function createRegion(direction, gate)
   local dist = entity.distanceToEntity(gate)
   local region
   if direction == Direction.UP then
-    region = {source[1] - 0.5, source[2],
-              source[1] + 0.5, source[2] + dist[2]}
+    region = {source[1], source[2] + 0.5,
+              source[1] + 1, source[2] + 0.5 + dist[2]}
   elseif direction == Direction.DOWN then
-    region = {source[1] - 0.5, source[2] + dist[2],
-              source[1] + 0.5, source[2]}
+    region = {source[1], source[2] + 0.5 + dist[2],
+              source[1] + 1, source[2] + 0.5}
   elseif direction == Direction.LEFT then
-    region = {source[1] + dist[1], source[2] - 0.5,
-              source[1], source[2] + 0.5}
+    region = {source[1] + 0.5 + dist[1], source[2],
+              source[1] + 0.5, source[2] + 1}
   elseif direction == Direction.RIGHT then
-    region = {source[1], source[2] - 0.5,
-              source[1] + dist[1], source[2] + 0.5}
+    region = {source[1] + 0.5, source[2],
+              source[1] + 0.5 + dist[1], source[2] + 1}
   else
     assert(false, "Direction was not valid.")
   end
