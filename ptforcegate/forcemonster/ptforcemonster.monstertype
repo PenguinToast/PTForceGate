@@ -19,7 +19,7 @@
     "damageTeam" : 0,
 
     "metaBoundBox" : [-0.25, -0.25, 0.25, 0.25],
-    "scale" : 0,
+    "scale" : 0.0,
 
     "movementSettings" : {
       "collisionPoly" : [ ],
@@ -52,19 +52,39 @@
       "damageSourceKind" : "testpoison",
       "statusEffects" : [ ]
     },
+    
+    "statusSettings" : {
+      "statusProperties" : {
+        "targetMaterialKind" : "organic"
+      },
 
-    "statusParameters" : {
-      "baseMaxHealth" : 0,
-      "bodyMaterialKind" : "organic",
-      "damageConfig" : "/damage/damageresponse/allergen.config"
-    },
+      "persistentEffectCategories" : [
+        "innate"
+      ],
 
-    "inateStatusEffects" : [
-      {
-        "kind" : "Protection",
-        "amount" : 1.0
+      "primaryScriptSources" : [ ],
+      "primaryScriptDelta" : 0,
+      
+      "stats" : {
+        "maxHealth" : {
+          "baseValue" : 0
+        },
+        "protection" : {
+          "baseValue" : 1.0
+        },
+        "healthRegen" : {
+          "baseValue" : 0.0
+        }
+      },
+
+      "resources" : {
+        "health" : {
+          "maxStat" : "maxHealth",
+          "deltaStat" : "healthRegen",
+          "defaultPercentage" : 100
+        }
       }
-    ],
+    },
 	
     "mouthOffset" : [0, 0],
     "feetOffset" : [0, 0],

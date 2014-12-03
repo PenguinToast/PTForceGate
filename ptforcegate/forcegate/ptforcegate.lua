@@ -1,49 +1,13 @@
---- Details
-local Direction = {
-  LEFT = -2,
-  RIGHT = 2,
-  DOWN = -1,
-  UP = 1,
-  isVertical = function(direction)
-    return direction == Direction.UP or direction == Direction.DOWN
-  end,
-  sign = function(direction)
-    if direction < 0 then
-      return -1
-    elseif direction > 0 then
-      return 1
-    else
-      return 0
-    end
-  end,
-  getVector = function(direction)
-    local out = {0, 0}
-    if Direction.isVertical(direction) then
-      out[2] = Direction.sign(direction)
-    else
-      out[1] = Direction.sign(direction)
-    end
-    return out
-  end,
-  rotate = function(direction) -- Rotate counter-clockwise.
-    if direction == Direction.LEFT then
-      return Direction.DOWN
-    elseif direction == Direction.RIGHT then
-      return Direction.UP
-    elseif direction == Direction.DOWN then
-      return Direction.LEFT
-    else
-      return Direction.RIGHT
-    end
-  end
-}
-
 function init(virtual)
   if not virtual then
     -- Fill connections table with default data
     local storage = storage
     local connections = storage.connections
-    for _,direction in pairs(Direction) do
+    if not connections then
+      connections = {}
+      storage.connections = connections
+    end
+    for _,direction in ipairs(Direction.list) do
       connections[direction] = {
         gateId = nil, -- Entity ID of the connected gate
         forceDirection = nil, -- The direction of the force
@@ -54,10 +18,13 @@ function init(virtual)
     end
     storage.maxRange = 15
     storage.forceStrength = 300
+    storage.active = true
+    if not storage.monsters then
+      storage.monsters = {}
+    end
   end
 end
 
--- TODO take into account gate activeness
 function update(dt)
   -- Update global values (maxRange, force)
   loadGlobal()
@@ -69,6 +36,8 @@ function update(dt)
   findConnections()
   -- Apply the forces
   applyForces()
+  -- TODO put this in the correct places
+  updateAnimationState()
 end
 
 function die()
@@ -143,13 +112,13 @@ function findConnections()
   local storage = storage
   local connections = storage.connections
   local gates = findGates()
-  for _,direction in pairs(Direction) do
+  for _,direction in ipairs(Direction.list) do
     local connection = connections[direction]
     local gate = gates[direction]
     if gate then
-      if connection.gateId == nil or connection.gateID ~= gate then
+      if connection.gateId == nil or connection.gateId ~= gate then
         -- Connection to gate
-        connect(gate)
+        connect(direction, gate)
       end
     end
   end
@@ -163,10 +132,12 @@ function applyForces()
   local monsters = storage.monsters
   local pos
   for direction,connection in pairs(connections) do
-    if connection.owner and connection.active and storage.active then
+    if connection.gateId and connection.owner
+      and connection.active and storage.active
+    then
       count = count + 1
       if count > 1 then -- Use a monster to apply the force
-        local monsterId = monsters[forceCount - 1]
+        local monsterId = monsters[count - 1]
         if monsterId == nil
           or not world.entityExists(monsterId)
           or not world.callScriptedEntity(monsterId, "isForceMonster")
@@ -177,7 +148,7 @@ function applyForces()
             pos[2] = pos[2] + 0.5
           end
           monsterId = world.spawnMonster("ptforcemonster", pos)
-          monsters[forceCount - 1] = monsterId
+          monsters[count - 1] = monsterId
         end
         world.callScriptedEntity(monsterId, "setForceToApply",
                                  connection.forceRegion, connection.force)
@@ -187,6 +158,9 @@ function applyForces()
     end
   end
   -- Clean up unneeded dummy monsters
+  if count == 0 then
+    count = 1
+  end
   for i = count, #monsters, 1 do
     local monsterId = monsters[count]
     if world.entityExists(monsterId) and
@@ -194,7 +168,7 @@ function applyForces()
     then
       world.callScriptedEntity(monsterId, "kill")
     end
-    storage.forceMonsters[count] = nil
+    monsters[count] = nil
   end
 end
 
@@ -209,12 +183,17 @@ function updateAnimationState()
   local count = 1
   -- Draw gate beams
   for direction,connection in pairs(storage.connections) do
-    ang = {ang[1] + connection.forceDirection[1],
-           ang[2] + connection.forceDirection[2]}
-    if connection.isOwner and connection.active and storage.active then
-      entity.rotateGroup("beam" .. count, data.angle)
-      entity.scaleGroup("beam" .. count, data.animationScale)
-      count = count + 1
+    if connection.gateId
+      and connection.active
+      and storage.active
+    then
+      ang = {ang[1] + connection.forceDirection[1],
+             ang[2] + connection.forceDirection[2]}
+      if connection.owner then
+        entity.rotateGroup("beam" .. count, connection.angle)
+        entity.scaleGroup("beam" .. count, connection.beamScale)
+        count = count + 1
+      end
     end
   end
   for i = count, 4, 1 do
@@ -238,20 +217,28 @@ function connect(direction, gate)
   local connection = storage.connections[direction]
   connection.gateId = gate
   local force = connection.force
-  force, active = world.callScriptedEntity(gate,
-                                           "connectResponse",
-                                             -direction,
-                                           entity.id(),
-                                           force,
-                                           connection.active)
-  local direction, strength = unitVector(force)
+  local response = world.callScriptedEntity(gate,
+                                            "connectResponse",
+                                              -direction,
+                                            entity.id(),
+                                            force,
+                                            connection.active)
+  force = response[1]
+  active = response[2]
+  local forceDirection, strength = unitVector(force)
   local region = createRegion(direction, gate)
   connection.force = force
-  conenction.forceDirection = direction
+  connection.forceDirection = forceDirection
   connection.forceStrength = strength
   connection.forceRegion = region
   connection.active = active
   connection.owner = true
+
+  -- Data needed for visuals
+  local dist = entity.distanceToEntity(gate)
+  dist = math.sqrt(dist[1] * dist[1] + dist[2] * dist[2])
+  connection.beamScale = {(dist - 1) / 10, 1}
+  connection.angle = Direction.angle(direction)
 end
 
 function connectResponse(direction, gate, force, active)
@@ -271,7 +258,10 @@ function connectResponse(direction, gate, force, active)
   connection.force = force
   connection.owner = false
   
-  return force, active
+  -- Data needed for visuals
+  connection.forceAngle = math.atan2(force[2], force[1])
+
+  return {force, active}
 end
 
 function setConnectionActive(direction, active)
@@ -323,31 +313,30 @@ function findGates()
   local minY = -range
   local maxY = range
   local dif
-  for _,objectId in objects do
+  for _,objectId in ipairs(objects) do
     local objectPos = world.entityPosition(objectId)
-    if objectPos[1] == pos[1] and hasLoS(pos, objectPos) then -- vertical
-      dif = objectPos[1] - pos[1]
-      if dif > 0 then -- right
-        if dif < maxX then
-          maxX = dif
+    local dif = world.distance(objectPos, pos)
+    if dif[2] == 0 and hasLoS(pos, objectPos) then -- vertical
+      if dif[1] > 0 then -- right
+        if dif[1] < maxX then
+          maxX = dif[1]
           out[Direction.RIGHT] = objectId
         end
       else -- left
-        if dif > minX then
-          minX = dif
+        if dif[1] > minX then
+          minX = dif[1]
           out[Direction.LEFT] = objectId
         end
       end
-    elseif objectPos[2] == pos[2] and hasLoS(pos, objectPos) then -- horizontal
-      dif = objectPos[2] - pos[2]
-      if dif > 0 then -- up
-        if dif < maxY then
-          maxY = dif
+    elseif dif[1] == 0 and hasLoS(pos, objectPos) then -- horizontal
+      if dif[2] > 0 then -- up
+        if dif[2] < maxY then
+          maxY = dif[2]
           out[Direction.UP] = objectId
         end
       else -- down
-        if dif > minY then
-          minY = dif
+        if dif[2] > minY then
+          minY = dif[2]
           out[Direction.DOWN] = objectId
         end
       end

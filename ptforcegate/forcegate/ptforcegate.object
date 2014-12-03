@@ -16,12 +16,12 @@
       "imagePosition" : [0, 0],
 
       "spaceScan" : 0.1,
-      //"anchors" : [ "background" ],
+      "anchors" : [ ],
       "direction" : "right"
     }
   ],
 
-  "scripts" : [ "/forcegateconfig.lua", "ptforcegate.lua" ],
+  "scripts" : [ "/inspect.lua", "Direction.lua", "ptforcegate.lua" ],
   "scriptDelta" : 5,
 
   "animation" : "ptforcegate.animation",
