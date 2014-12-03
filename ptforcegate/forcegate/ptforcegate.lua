@@ -24,6 +24,17 @@ local Direction = {
       out[1] = Direction.sign(direction)
     end
     return out
+  end,
+  rotate = function(direction) -- Rotate counter-clockwise.
+    if direction == Direction.LEFT then
+      return Direction.DOWN
+    elseif direction == Direction.RIGHT then
+      return Direction.UP
+    elseif direction == Direction.DOWN then
+      return Direction.LEFT
+    else
+      return Direction.RIGHT
+    end
   end
 }
 
@@ -37,12 +48,16 @@ function init(virtual)
         gateId = nil, -- Entity ID of the connected gate
         forceDirection = nil, -- The direction of the force
         forceStrength = nil, -- The magnitude of the force
-        force = nil -- The force
+        force = nil, -- The force
+        active = true -- Connections are active by default
       }
     end
+    storage.maxRange = 15
+    storage.forceStrength = 300
   end
 end
 
+-- TODO take into account gate activeness
 function update(dt)
   -- Update global values (maxRange, force)
   loadGlobal()
@@ -56,6 +71,20 @@ function update(dt)
   applyForces()
 end
 
+function die()
+  -- Kill any attached force monsters.
+  local monsters = storage.monsters
+  for count = 1, #monsters, 1 do
+    local mId = monsters[count]
+    if world.entityExists(mId) and
+      world.callScriptedEntity(mId, "isForceMonster")
+    then
+      world.callScriptedEntity(mId, "kill")
+    end
+    monsters[count] = nil
+  end
+end
+
 --- Loads any global properties.
 function loadGlobal()
   local storage = storage
@@ -65,8 +94,20 @@ function loadGlobal()
       storage.maxRange = globalProperties.maxRange
     end
     if globalProperties.forceStrength ~= storage.forceStrength then
+      local id = entity.id()
+      local strength = globalProperties.forceStrength
+      storage.forceStrength = strength
       -- Update each connection
-      -- TODO
+      for direction,connection in pairs(storage.connections) do
+        connection.forceStrength = strength
+        local dir = connection.forceDirection
+        local force = {dir[1] * strength, dir[2] * strength}
+        connection.force = force
+        if connection.gateId then
+          world.callScriptedEntity(connection.gateId, "connectResponse",
+                                     -direction, id, force)
+        end
+      end
     end
   end
 end
@@ -108,7 +149,7 @@ function findConnections()
     if gate then
       if connection.gateId == nil or connection.gateID ~= gate then
         -- Connection to gate
-        -- TODO
+        connect(gate)
       end
     end
   end
@@ -116,7 +157,77 @@ end
 
 --- Apply the forces of the connections,
 function applyForces()
+  local storage = storage
+  local connections = storage.connections
+  local count = 0
+  local monsters = storage.monsters
+  local pos
+  for direction,connection in pairs(connections) do
+    if connection.owner and connection.active and storage.active then
+      count = count + 1
+      if count > 1 then -- Use a monster to apply the force
+        local monsterId = monsters[forceCount - 1]
+        if monsterId == nil
+          or not world.entityExists(monsterId)
+          or not world.callScriptedEntity(monsterId, "isForceMonster")
+        then
+          if not pos then
+            pos = entity.position()
+            pos[1] = pos[1] + 0.5
+            pos[2] = pos[2] + 0.5
+          end
+          monsterId = world.spawnMonster("ptforcemonster", pos)
+          monsters[forceCount - 1] = monsterId
+        end
+        world.callScriptedEntity(monsterId, "setForceToApply",
+                                 connection.forceRegion, connection.force)
+      else -- Apply the force by self
+        entity.setForceRegion(connection.forceRegion, connection.force)
+      end
+    end
+  end
+  -- Clean up unneeded dummy monsters
+  for i = count, #monsters, 1 do
+    local monsterId = monsters[count]
+    if world.entityExists(monsterId) and
+      world.callScriptedEntity(monsterId, "isForceMonster")
+    then
+      world.callScriptedEntity(monsterId, "kill")
+    end
+    storage.forceMonsters[count] = nil
+  end
+end
 
+--- Update the animations.
+function updateAnimationState()
+  if storage.active then
+    entity.setAnimationState("gatestate", "on")
+  else
+    entity.setAnimationState("gatestate", "off")
+  end
+  local ang = {0, 0}
+  local count = 1
+  -- Draw gate beams
+  for direction,connection in pairs(storage.connections) do
+    ang = {ang[1] + connection.forceDirection[1],
+           ang[2] + connection.forceDirection[2]}
+    if connection.isOwner and connection.active and storage.active then
+      entity.rotateGroup("beam" .. count, data.angle)
+      entity.scaleGroup("beam" .. count, data.animationScale)
+      count = count + 1
+    end
+  end
+  for i = count, 4, 1 do
+    entity.scaleGroup("beam" .. i, {0, 1})
+  end
+  -- Draw direction arrow
+  if ang[1] == 0 and ang[2] == 0 then
+    entity.setAnimationState("arrowstate", "zero")
+    entity.rotateGroup("direction", 0)
+  else
+    entity.setAnimationState("arrowstate", "normal")
+    entity.rotateGroup("direction", math.atan2(ang[2], ang[1]))
+  end
 end
 
 --- Connects this gate to another.
@@ -127,19 +238,51 @@ function connect(direction, gate)
   local connection = storage.connections[direction]
   connection.gateId = gate
   local force = connection.force
-  force = world.callScriptedEntity(gate,
-                                   "connectResponse",
-                                     -direction,
-                                   entity.id(),
-                                   force)
+  force, active = world.callScriptedEntity(gate,
+                                           "connectResponse",
+                                             -direction,
+                                           entity.id(),
+                                           force,
+                                           connection.active)
   local direction, strength = unitVector(force)
+  local region = createRegion(direction, gate)
   connection.force = force
   conenction.forceDirection = direction
   connection.forceStrength = strength
+  connection.forceRegion = region
+  connection.active = active
+  connection.owner = true
 end
 
-function connectResponse(direction, gate, force)
+function connectResponse(direction, gate, force, active)
+  local storage = storage
+  local connection = storage.connections[direction]
+  active = active and connection.active
+
+  if not force then
+    if connection.force then
+      force = connection.force
+    else
+      local direction = Direction.getVector(Direction.rotate(direction))
+      local strength = storage.forceStrength
+      force = {direction[1] * strength, direction[2] * strength}
+    end
+  end
+  connection.force = force
+  connection.owner = false
   
+  return force, active
+end
+
+function setConnectionActive(direction, active)
+  local connection = storage.connections[direction]
+  if connection.active ~= active then
+    connection.active = active
+    if connection.gateId then
+      world.callScriptedEntity(connection.gateId, "setConnectionActive",
+                                 -direction, active)
+    end
+  end
 end
 
 --- Checks if this entity has LoS to the target position.
@@ -222,4 +365,30 @@ function unitVector(vec)
     y / len
   }
   return direction, len
+end
+
+function createRegion(direction, gate)
+  local source = entity.position()
+  local target = world.entityPosition(gate)
+  local region
+  if direction == Direction.UP then
+    local len = target[2] - source[2]
+    region = {source[1] - 0.5, source[2],
+              source[1] + 0.5, source[2] + len}
+  elseif direction == Direction.DOWN then
+    local len = source[2] - target[2]
+    region = {source[1] - 0.5, source[2] - len,
+              source[1] + 0.5, source[2]}
+  elseif direction == Direction.LEFT then
+    local len = source[1] - target[1]
+    region = {source[1] - len, source[2] - 0.5,
+              source[1], source[2] + 0.5}
+  elseif direction == Direction.RIGHT then
+    local len = target[1] - source[1]
+    region = {source[1], source[2] - 0.5,
+              source[1] + len, source[2] + 0.5}
+  else
+    assert(false, "Direction was not valid.")
+  end
+  return region
 end

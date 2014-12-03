@@ -5,18 +5,31 @@ function init(args)
   entity.setDamageOnTouch(false)
   entity.setAggressive(false)
   
-  self.regionToApply = {0,0,0,0}
-  self.forceToApply = {0,0}
+  self.forceRegion = {0,0,0,0}
+  self.force = {0,0}
+  self.timeout = 0.5
+  self.timer = self.timeout
 end
 
-function main()
-  entity.setForceRegion(self.regionToApply, self.forceToApply)
+function update(dt)
+  local self = self
+  self.timer = self.timer - dt
+  if self.timer <= 0 then
+    -- Kill self
+    kill()
+  else
+    entity.setForceRegion(self.forceRegion, self.force)
+  end
   --world.logInfo("Monster %s applied force %s to region %s", entity.id(), self.forceToApply, self.regionToApply)
 end
 
+--- Sets the force region for this monster to apply, and refreshes the timeout
+-- timer.
 function setForceToApply(region, force)
-  self.regionToApply = region
-  self.forceToApply = force
+  local self = self
+  self.forceRegion = region
+  self.force = force
+  self.timer = self.timeout
 end
 
 function isForceMonster()
@@ -24,11 +37,11 @@ function isForceMonster()
 end
 
 function damage(args)
-  -- huehuehue i cant die
+  -- This monster should not die outside of scripts.
 end
 
+--- Kills this monster
 function kill()
-  -- nvm i can die D:
   self.dead = true
 end
 
