@@ -20,7 +20,6 @@ function update(dt)
   else
     entity.setForceRegion(self.forceRegion, self.force)
   end
-  --world.logInfo("Monster %s applied force %s to region %s", entity.id(), self.forceToApply, self.regionToApply)
 end
 
 --- Sets the force region for this monster to apply, and refreshes the timeout

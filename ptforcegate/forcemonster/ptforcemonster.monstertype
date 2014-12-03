@@ -19,7 +19,7 @@
     "damageTeam" : 0,
 
     "metaBoundBox" : [-0.25, -0.25, 0.25, 0.25],
-    "scale" : 0.0,
+    "scale" : 1.0,
 
     "movementSettings" : {
       "collisionPoly" : [ ],
@@ -38,7 +38,7 @@
 
     "bodyMaterialKind" : "organic",
 
-    "knockoutTime" : 1,
+    "knockoutTime" : 0,
     "knockoutEffect" : "blink",
     "deathParticles" : "deathPoof",
     "deathNoise" : [ ],

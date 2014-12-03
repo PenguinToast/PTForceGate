@@ -45,15 +45,15 @@ function Direction.rotate(direction)
   end
 end
 
---- Angle in degrees
+--- Angle in radians
 function Direction.angle(direction)
   if direction == Direction.LEFT then
-    return 180
+    return math.pi
   elseif direction == Direction.RIGHT then
     return 0
   elseif direction == Direction.DOWN then
-    return 270
+    return 3 * math.pi / 2
   else
-    return 90
+    return math.pi / 2
   end
 end

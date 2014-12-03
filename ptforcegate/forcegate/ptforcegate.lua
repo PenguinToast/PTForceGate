@@ -158,17 +158,17 @@ function applyForces()
     end
   end
   -- Clean up unneeded dummy monsters
-  if count == 0 then
-    count = 1
-  end
-  for i = count, #monsters, 1 do
+  local numMonsters = #monsters
+  for i = count, numMonsters, 1 do
     local monsterId = monsters[count]
-    if world.entityExists(monsterId) and
-      world.callScriptedEntity(monsterId, "isForceMonster")
-    then
-      world.callScriptedEntity(monsterId, "kill")
+    if monsterId then
+      if world.entityExists(monsterId) and
+        world.callScriptedEntity(monsterId, "isForceMonster")
+      then
+        world.callScriptedEntity(monsterId, "kill")
+      end
+      monsters[count] = nil
     end
-    monsters[count] = nil
   end
 end
 
@@ -358,24 +358,20 @@ end
 
 function createRegion(direction, gate)
   local source = entity.position()
-  local target = world.entityPosition(gate)
+  local dist = entity.distanceToEntity(gate)
   local region
   if direction == Direction.UP then
-    local len = target[2] - source[2]
     region = {source[1] - 0.5, source[2],
-              source[1] + 0.5, source[2] + len}
+              source[1] + 0.5, source[2] + dist[2]}
   elseif direction == Direction.DOWN then
-    local len = source[2] - target[2]
-    region = {source[1] - 0.5, source[2] - len,
+    region = {source[1] - 0.5, source[2] + dist[2],
               source[1] + 0.5, source[2]}
   elseif direction == Direction.LEFT then
-    local len = source[1] - target[1]
-    region = {source[1] - len, source[2] - 0.5,
+    region = {source[1] + dist[1], source[2] - 0.5,
               source[1], source[2] + 0.5}
   elseif direction == Direction.RIGHT then
-    local len = target[1] - source[1]
     region = {source[1], source[2] - 0.5,
-              source[1] + len, source[2] + 0.5}
+              source[1] + dist[1], source[2] + 0.5}
   else
     assert(false, "Direction was not valid.")
   end
