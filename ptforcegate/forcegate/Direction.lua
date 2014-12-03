@@ -1,27 +1,40 @@
 --- Details
 Direction = {
-  LEFT = -2,
+  LEFT = 4,
   RIGHT = 2,
-  DOWN = -1,
+  DOWN = 3,
   UP = 1,
-  list = {-2, 2, -1, 1}
+  list = {1, 2, 3, 4}
 }
+
+--- Gets the opposite direction.
+function Direction.flip(direction)
+  if direction == Direction.LEFT then
+    return Direction.RIGHT
+  elseif direction == Direction.RIGHT then
+    return Direction.LEFT
+  elseif direction == Direction.DOWN then
+    return Direction.UP
+  else
+    return Direction.DOWN
+  end
+end
 
 --- Returns true if the direction is UP or DOWN.
 function Direction.isVertical(direction)
   return direction == Direction.UP or direction == Direction.DOWN
 end
 
+--- Returns 1 for up and right, and -1 for down and left.
 function Direction.sign(direction)
-  if direction < 0 then
+  if direction == Direction.LEFT or direction == Direction.DOWN then
     return -1
-  elseif direction > 0 then
-    return 1
   else
-    return 0
+    return 1
   end
 end
 
+--- Get a unit vector in the specified direction.
 function Direction.getVector(direction)
   local out = {0, 0}
   if Direction.isVertical(direction) then

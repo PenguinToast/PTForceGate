@@ -15,11 +15,11 @@
       "/ptforcegate/forcemonster/behavior.lua"
     ],
 
-    "scriptDelta" : 5,
+    "scriptDelta" : 6,
     "damageTeam" : 0,
 
     "metaBoundBox" : [-0.25, -0.25, 0.25, 0.25],
-    "scale" : 1.0,
+    "scale" : 0.0,
 
     "movementSettings" : {
       "collisionPoly" : [ ],

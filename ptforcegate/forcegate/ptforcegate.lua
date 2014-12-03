@@ -23,6 +23,7 @@ function init(virtual)
       storage.monsters = {}
     end
     storage.initialized = true
+    updateAnimationState()
   end
 end
 
@@ -37,8 +38,6 @@ function update(dt)
   findConnections()
   -- Apply the forces
   applyForces()
-  -- TODO put this in the correct places
-  updateAnimationState()
 end
 
 function die()
@@ -78,7 +77,7 @@ function loadGlobal()
         connection.force = force
         if connection.gateId then
           world.callScriptedEntity(connection.gateId, "connectResponse",
-                                     -direction, id, force)
+                                   Direction.flip(direction), id, force)
         end
       end
     end
@@ -91,8 +90,11 @@ function cleanConnections()
   local connections = storage.connections
   for direction,connection in pairs(connections) do
     if connection.gateId then
-      if not world.entityExists(connection.gateId) then
+      if not world.entityExists(connection.gateId)
+        or world.entityName(connection.gateId) ~= "ptforcegate"
+      then
         connection.gateId = nil
+        updateAnimationState()
       end
     end
   end
@@ -102,10 +104,15 @@ end
 function checkLoS()
   local storage = storage
   local connections = storage.connections
+  local pos = entity.position()
+  local maxRange = storage.maxRange
   for direction,connection in pairs(connections) do
     if connection.gateId then
-      if not hasLoS(world.entityPosition(connection.gateId)) then
+      local target = world.entityPosition(connection.gateId)
+      local dist = world.magnitude(pos, target)
+      if not hasLoS(pos, target) or dist > maxRange then
         connection.gateId = nil
+        updateAnimationState()
       end
     end
   end
@@ -158,6 +165,11 @@ function applyForces()
                                  connection.forceRegion, connection.force)
       else -- Apply the force by self
         entity.setForceRegion(connection.forceRegion, connection.force)
+        local reg = connection.forceRegion
+        world.debugLine({reg[1], reg[2]}, {reg[1], reg[4]}, "red")
+        world.debugLine({reg[1], reg[4]}, {reg[3], reg[4]}, "red")
+        world.debugLine({reg[3], reg[2]}, {reg[3], reg[4]}, "red")
+        world.debugLine({reg[1], reg[2]}, {reg[3], reg[2]}, "red")
       end
     end
   end
@@ -223,7 +235,7 @@ function connect(direction, gate)
   local force = connection.force
   local response = world.callScriptedEntity(gate,
                                             "connectResponse",
-                                              -direction,
+                                            Direction.flip(direction),
                                             entity.id(),
                                             force,
                                             connection.active)
@@ -243,6 +255,7 @@ function connect(direction, gate)
   dist = math.sqrt(dist[1] * dist[1] + dist[2] * dist[2])
   connection.beamScale = {(dist - 1) / 10, 1}
   connection.angle = Direction.angle(direction)
+  updateAnimationState()
 end
 
 function connectResponse(direction, gate, force, active)
@@ -265,6 +278,7 @@ function connectResponse(direction, gate, force, active)
   -- Data needed for visuals
   connection.forceAngle = math.atan2(force[2], force[1])
 
+  updateAnimationState()
   return {force, active}
 end
 
@@ -274,24 +288,18 @@ function setConnectionActive(direction, active)
     connection.active = active
     if connection.gateId then
       world.callScriptedEntity(connection.gateId, "setConnectionActive",
-                                 -direction, active)
+                               Direction.flip(direction), active)
     end
+    updateAnimationState()
   end
 end
 
 --- Checks if this entity has LoS to the target position.
--- @param source[opt] The source position.
+-- @param source The source position.
 -- @param target The position to check LoS to.
 -- @return True if this entity has LoS, false if not.
 function hasLoS(source, target)
-  local pos
-  if target then
-    pos = source
-  else
-    pos = entity.position()
-    target = source
-  end
-  local col = world.collisionBlocksAlongLine(pos, target, true, 1)
+  local col = world.collisionBlocksAlongLine(source, target, true, 1)
   return #col ==  0
 end
 
