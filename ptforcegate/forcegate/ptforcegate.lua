@@ -1,7 +1,7 @@
 function init(virtual)
-  if not virtual then
-    -- Fill connections table with default data
+  if not virtual and not storage.initialized then
     local storage = storage
+    -- Fill connections table with default data
     local connections = storage.connections
     if not connections then
       connections = {}
@@ -22,6 +22,7 @@ function init(virtual)
     if not storage.monsters then
       storage.monsters = {}
     end
+    storage.initialized = true
   end
 end
 
@@ -54,6 +55,7 @@ function die()
       monsters[count] = nil
     end
   end
+  storage.initialized = false
 end
 
 --- Loads any global properties.
