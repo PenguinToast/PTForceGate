@@ -36,9 +36,5 @@
   },
   "animationPosition" : [0, 0],
   
-  "inboundNodes" : [
-    [0, 0]
-  ],
-  
   "damageTable" : "/ptforcegate/forcegate/forcegateDamage.config"
 }

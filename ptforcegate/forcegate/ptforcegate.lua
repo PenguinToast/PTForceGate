@@ -24,6 +24,7 @@ function init(virtual)
     end
     storage.initialized = true
     updateAnimationState()
+    entity.setInteractive(true)
   end
 end
 
@@ -57,6 +58,26 @@ function die()
   storage.initialized = false
 end
 
+function onInteraction(args)
+  if storage.active then
+    local connections = storage.connections
+    local id = entity.id()
+    for direction,connection in pairs(connections) do
+      if connection.gateId and connection.active then
+        local force = connection.force
+        force[1] = -force[1]
+        force[2] = -force[2]
+        local forceDirection = connection.forceDirection
+        forceDirection[1] = -forceDirection[1]
+        forceDirection[2] = -forceDirection[2]
+        world.callScriptedEntity(connection.gateId, "updateForce",
+                                 Direction.flip(direction), force)
+      end
+    end
+    updateAnimationState()
+  end
+end
+
 --- Loads any global properties.
 function loadGlobal()
   local storage = storage
@@ -76,8 +97,8 @@ function loadGlobal()
         local force = {dir[1] * strength, dir[2] * strength}
         connection.force = force
         if connection.gateId then
-          world.callScriptedEntity(connection.gateId, "connectResponse",
-                                   Direction.flip(direction), id, force)
+          world.callScriptedEntity(connection.gateId, "updateForce",
+                                   Direction.flip(direction), force)
         end
       end
     end
@@ -198,8 +219,8 @@ function updateAnimationState()
       and connection.active
       and storage.active
     then
-      ang = {ang[1] + connection.forceDirection[1],
-             ang[2] + connection.forceDirection[2]}
+      ang = {ang[1] + connection.force[1],
+             ang[2] + connection.force[2]}
       if connection.owner then
         entity.rotateGroup("beam" .. count, connection.angle)
         entity.scaleGroup("beam" .. count, connection.beamScale)
@@ -275,6 +296,14 @@ function connectResponse(direction, gate, force, active)
 
   updateAnimationState()
   return {force, active}
+end
+
+function updateForce(direction, force)
+  local connection = storage.connections[direction]
+  connection.force = force
+  -- Data needed for visuals
+  connection.forceAngle = math.atan2(force[2], force[1])
+  updateAnimationState()
 end
 
 function setConnectionActive(direction, active)
