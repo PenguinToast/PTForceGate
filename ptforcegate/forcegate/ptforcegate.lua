@@ -45,12 +45,14 @@ function die()
   local monsters = storage.monsters
   for count = 1, #monsters, 1 do
     local mId = monsters[count]
-    if world.entityExists(mId) and
-      world.callScriptedEntity(mId, "isForceMonster")
-    then
-      world.callScriptedEntity(mId, "kill")
+    if mId then
+      if world.entityExists(mId) and
+        world.callScriptedEntity(mId, "isForceMonster")
+      then
+        world.callScriptedEntity(mId, "kill")
+      end
+      monsters[count] = nil
     end
-    monsters[count] = nil
   end
 end
 
