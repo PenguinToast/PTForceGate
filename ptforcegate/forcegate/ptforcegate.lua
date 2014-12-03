@@ -59,22 +59,25 @@ function die()
 end
 
 function onInteraction(args)
-  if storage.active then
-    local connections = storage.connections
-    local id = entity.id()
-    for direction,connection in pairs(connections) do
-      if connection.gateId and connection.active then
-        local force = connection.force
-        force[1] = -force[1]
-        force[2] = -force[2]
-        local forceDirection = connection.forceDirection
-        forceDirection[1] = -forceDirection[1]
-        forceDirection[2] = -forceDirection[2]
-        world.callScriptedEntity(connection.gateId, "updateForce",
-                                 Direction.flip(direction), force)
+  -- Show GUI if the player is holding the wiretool.
+  if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
+    local consoleConfig = entity.configParameter("consoleConfig")
+    return {"ScriptConsole", consoleConfig}
+  else -- Flip the connections
+    if storage.active then
+      local connections = storage.connections
+      local id = entity.id()
+      for direction,connection in pairs(connections) do
+        if connection.gateId and connection.active then
+          local force = connection.force
+          force = {-force[1], -force[2]}
+          updateForce(direction, force)
+          world.callScriptedEntity(connection.gateId, "updateForce",
+                                   Direction.flip(direction), force)
+        end
       end
+      updateAnimationState()
     end
-    updateAnimationState()
   end
 end
 
@@ -301,6 +304,10 @@ end
 function updateForce(direction, force)
   local connection = storage.connections[direction]
   connection.force = force
+  if connection.owner then
+    local forceDirection = unitVector(force)
+    connection.forceDirection = forceDirection
+  end
   -- Data needed for visuals
   connection.forceAngle = math.atan2(force[2], force[1])
   updateAnimationState()
