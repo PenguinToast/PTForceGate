@@ -121,21 +121,19 @@ function updateControllers()
       -- Copy settings
       for direction, connection in pairs(storage.conections) do
         local directionControl = controller[direction]
-        if directionControl then
-          if directionControl.active ~= nil then
-            setConnectionActive(direction, directionControl.active)
-          end
-          if directionControl.forceDirection ~= nil then
-            local newDir = directionControl.forceDirection
-            local connection = connections[direction]
-            if connection.gateId then
-              local dir, str = unitVector(connections[direction].force)
-              if dir[1] ~= newDir[1] or dir[2] ~= newDir[2] then
-                local force = {newDir[1] * str, newDir[2] * str}
-                updateForce(direction, force)
-                world.callScriptedEntity(conection.gateId, "updateForce",
-                                         Direction.flip(direction), force)
-              end
+        if directionControl.active ~= nil then
+          setConnectionActive(direction, directionControl.active)
+        end
+        if directionControl.forceDirection ~= nil then
+          local newDir = directionControl.forceDirection
+          local connection = connections[direction]
+          if connection.gateId then
+            local dir, str = unitVector(connections[direction].force)
+            if dir[1] ~= newDir[1] or dir[2] ~= newDir[2] then
+              local force = {newDir[1] * str, newDir[2] * str}
+              updateForce(direction, force)
+              world.callScriptedEntity(conection.gateId, "updateForce",
+                                       Direction.flip(direction), force)
             end
           end
         end

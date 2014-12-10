@@ -1,16 +1,41 @@
 function init(virtual)
   if not virtual and not storage.initialized then
+    local storage = storage
     storage.active = false
     storage.initialized = true
-    storage.uuid = getUuid()
+    local uuid = getUuid()
+    storage.uuid = uuid
     entity.setInteractive(true)
+
+    -- Register with world properties
+    local ctrlList = world.getProperty("ptforcegateCtrlList")
+    if not ctrlList then
+      ctrlList = {}
+    end
+    table.insert(ctrlList, uuid)
+    world.setProperty("ptforcegateCtrlList", ctrlList)
+    local control = {}
+    for _,direction in ipairs(Direction.list) do
+      control[direction] = {}
+    end
+    world.setProperty("ptforcegateCtrl" .. uuid, control)
+    
     updateAnimation()
   end
 end
 
 function die()
+  local storage = storage
   storage.initialized = false
-  
+  local ctrlList = world.getProperty("ptforcegateCtrlList")
+  for i,uuid in ipairs(ctrlList) do
+    if uuid == storage.uuid then
+      table.remove(ctrlList, i)
+      break
+    end
+  end
+  world.setProperty("ptforcegateCtrlList", ctrlList)
+  world.setProperty("ptforcegateCtrl" .. storage.uuid, nil)
 end
 
 function onNodeConnectionChange()

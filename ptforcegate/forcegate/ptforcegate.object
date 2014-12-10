@@ -21,7 +21,9 @@
     }
   ],
 
-  "scripts" : [ "/inspect.lua", "Direction.lua", "ptforcegate.lua" ],
+  "scripts" : [ "/inspect.lua",
+                "/ptforcegate/Direction.lua",
+                "ptforcegate.lua" ],
   "scriptDelta" : 6,
 
   "animation" : "ptforcegate.animation",
