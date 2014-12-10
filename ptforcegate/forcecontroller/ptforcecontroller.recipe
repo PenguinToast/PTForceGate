@@ -1,10 +1,11 @@
 {
   "input" : [
     { "item" : "laserdiode", "count" : 4 },
-    { "item" : "circuitboard", "count" : 4 }
+    { "item" : "circuitboard", "count" : 3 },
+    { "item" : "money", "count" : 300 }
   ],
   "output" : {
-    "item" : "ptforceswitch",
+    "item" : "ptforcecontroller",
     "count" : 1
   },
   "groups" : [ "wiringstation", "all" ]

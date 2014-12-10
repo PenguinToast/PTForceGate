@@ -10,8 +10,6 @@ function init(virtual)
     for _,direction in ipairs(Direction.list) do
       connections[direction] = {
         gateId = nil, -- Entity ID of the connected gate
-        forceDirection = nil, -- The direction of the force
-        forceStrength = nil, -- The magnitude of the force
         force = nil, -- The force
         active = true -- Connections are active by default
       }
@@ -22,6 +20,7 @@ function init(virtual)
     if not storage.monsters then
       storage.monsters = {}
     end
+    storage.controllers = {}
     storage.initialized = true
     updateAnimationState()
     entity.setInteractive(true)
@@ -31,6 +30,8 @@ end
 function update(dt)
   -- Update global values (maxRange, force)
   loadGlobal()
+  -- Update controllers
+  updateControllers()
   -- Check for no longer existing connections
   cleanConnections()
   -- Check LoS on existing connections
@@ -84,7 +85,7 @@ end
 --- Loads any global properties.
 function loadGlobal()
   local storage = storage
-  local globalProperties = world.getProperty("ptforcegate")
+  local globalProperties = world.getProperty("ptforcegateGlobal")
   if globalProperties then
     if globalProperties.maxRange ~= storage.maxRange then
       storage.maxRange = globalProperties.maxRange
@@ -95,8 +96,7 @@ function loadGlobal()
       storage.forceStrength = strength
       -- Update each connection
       for direction,connection in pairs(storage.connections) do
-        connection.forceStrength = strength
-        local dir = connection.forceDirection
+        local dir = unitVector(connection.force)
         local force = {dir[1] * strength, dir[2] * strength}
         connection.force = force
         if connection.gateId then
@@ -104,6 +104,44 @@ function loadGlobal()
                                    Direction.flip(direction), force)
         end
       end
+    end
+  end
+end
+
+--- Updates any values from controllers.
+function updateControllers()
+  local controllers = storage.controllers
+  local world = world
+  local connections = storage.connections
+  for i=#controllers,1,-1 do
+    local controllerId = controllers[i]
+    local controller = world.getProperty(
+      "ptforcegateCtrl" .. controllerId)
+    if controller then
+      -- Copy settings
+      for direction, connection in pairs(storage.conections) do
+        local directionControl = controller[direction]
+        if directionControl then
+          if directionControl.active ~= nil then
+            setConnectionActive(direction, directionControl.active)
+          end
+          if directionControl.forceDirection ~= nil then
+            local newDir = directionControl.forceDirection
+            local connection = connections[direction]
+            if connection.gateId then
+              local dir, str = unitVector(connections[direction].force)
+              if dir[1] ~= newDir[1] or dir[2] ~= newDir[2] then
+                local force = {newDir[1] * str, newDir[2] * str}
+                updateForce(direction, force)
+                world.callScriptedEntity(conection.gateId, "updateForce",
+                                         Direction.flip(direction), force)
+              end
+            end
+          end
+        end
+      end
+    else
+      table.remove(controllers, i)
     end
   end
 end
@@ -263,8 +301,6 @@ function connect(direction, gate)
   local forceDirection, strength = unitVector(force)
   local region = createRegion(direction, gate)
   connection.force = force
-  connection.forceDirection = forceDirection
-  connection.forceStrength = strength
   connection.forceRegion = region
   connection.active = active
   connection.owner = true
@@ -304,10 +340,6 @@ end
 function updateForce(direction, force)
   local connection = storage.connections[direction]
   connection.force = force
-  if connection.owner then
-    local forceDirection = unitVector(force)
-    connection.forceDirection = forceDirection
-  end
   -- Data needed for visuals
   connection.forceAngle = math.atan2(force[2], force[1])
   updateAnimationState()
