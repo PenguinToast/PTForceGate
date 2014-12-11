@@ -1,7 +1,7 @@
 function init(virtual)
   if not virtual and not storage.initialized then
     local storage = storage
-    storage.active = false
+    storage.state = false
     storage.initialized = true
     local uuid = getUuid()
     storage.uuid = uuid
@@ -14,7 +14,7 @@ function init(virtual)
     end
     table.insert(ctrlList, uuid)
     world.setProperty("ptforcegateCtrlList", ctrlList)
-    local control = {}
+    local control = {name = "Controller " .. uuid}
     for _,direction in ipairs(Direction.list) do
       control[direction] = {}
     end
@@ -38,24 +38,36 @@ function die()
   world.setProperty("ptforcegateCtrl" .. storage.uuid, nil)
 end
 
+function updateProperties()
+  local storage = storage
+  local world = world
+  local control = storage[storage.state]
+  if storage.name then
+    control.name = storage.name
+  end
+  world.setProperty("ptforcegateCtrl" .. storage.uuid, control)
+end
+
 function onNodeConnectionChange()
   checkNodes()
+  updateProperties()
   updateAnimation()
 end
 
 function onInboundNodeChange(args)
   checkNodes()
+  updateProperties()
   updateAnimation()
 end
 
 function checkNodes()
   if entity.isInboundNodeConnected(0) then
-    storage.active = entity.getInboundNodeLevel(0)
+    storage.state = entity.getInboundNodeLevel(0)
   end
 end
 
 function updateAnimation()
-  entity.setAnimationState("onoff", storage.active and "on" or "off")
+  entity.setAnimationState("onoff", storage.state and "on" or "off")
 end
 
 function getUuid()

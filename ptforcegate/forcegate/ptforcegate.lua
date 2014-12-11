@@ -119,9 +119,16 @@ function updateControllers()
       "ptforcegateCtrl" .. controllerId)
     if controller then
       -- Copy settings
+      if controller.active ~= nil
+        and controller.active ~= storage.active
+      then
+        storage.active = controller.active
+      end
       for direction, connection in pairs(storage.conections) do
         local directionControl = controller[direction]
-        if directionControl.active ~= nil then
+        if directionControl.active ~= nil
+          and directionControl.active ~= connection.active
+        then
           setConnectionActive(direction, directionControl.active)
         end
         if directionControl.forceDirection ~= nil then
