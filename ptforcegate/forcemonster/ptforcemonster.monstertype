@@ -58,6 +58,9 @@
         "targetMaterialKind" : "organic"
       },
 
+      "appliesEnvironmentStatusEffects" : false,
+      "minimumLiquidStatusEffectPercentage" : 0,
+
       "persistentEffectCategories" : [
         "innate"
       ],
