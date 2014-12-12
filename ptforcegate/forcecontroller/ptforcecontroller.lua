@@ -1,6 +1,7 @@
 function init(virtual)
   if not virtual and not storage.initialized then
     local storage = storage
+    storage.states = {[true] = {}, [false] = {}}
     storage.state = false
     storage.initialized = true
     local uuid = getUuid()
@@ -14,11 +15,14 @@ function init(virtual)
     end
     table.insert(ctrlList, uuid)
     world.setProperty("ptforcegateCtrlList", ctrlList)
-    local control = {name = "Controller " .. uuid}
-    for _,direction in ipairs(Direction.list) do
-      control[direction] = {}
+    
+    for state,control in pairs(storage.states) do
+      control.name = "Controller " .. uuid
+      for _,direction in ipairs(Direction.list) do
+        control[direction] = {}
+      end
     end
-    world.setProperty("ptforcegateCtrl" .. uuid, control)
+    world.setProperty("ptforcegateCtrl" .. uuid, states[storage.state])
     
     updateAnimation()
   end
@@ -41,11 +45,16 @@ end
 function updateProperties()
   local storage = storage
   local world = world
-  local control = storage[storage.state]
+  local control = storage.states[storage.state]
   if storage.name then
     control.name = storage.name
   end
   world.setProperty("ptforcegateCtrl" .. storage.uuid, control)
+end
+
+function receiveConsoleStates(consoleStates)
+  storage.states = consoleStates
+  updateProperties()
 end
 
 function onNodeConnectionChange()
@@ -74,6 +83,7 @@ function onInteraction(args)
   -- Show GUI if player is holding wiretool, else toggle state.
   if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
     local consoleConfig = entity.configParameter("consoleConfig")
+    consoleConfig.states = storage.states
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
     storage.state = not storage.state

@@ -1,9 +1,6 @@
 function init()
-  local button = TextButton(100, 100, 100, 14, "Close")
-  button.onClick = function()
-    console.dismiss()
-  end
-  GUI.add(button)
+  states = console.configParameter("states")
+  
 end
 
 function update(dt)
@@ -16,4 +13,10 @@ end
 
 function canvasKeyEvent(key, isKeyDown)
   GUI.keyEvent(key, isKeyDown)
+end
+
+function syncStates()
+  world.callScriptedEntity(console.sourceEntity(),
+                           "receiveConsoleStates",
+                           states)
 end
