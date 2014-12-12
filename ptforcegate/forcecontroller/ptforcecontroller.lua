@@ -70,6 +70,18 @@ function updateAnimation()
   entity.setAnimationState("onoff", storage.state and "on" or "off")
 end
 
+function onInteraction(args)
+  -- Show GUI if player is holding wiretool, else toggle state.
+  if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
+    local consoleConfig = entity.configParameter("consoleConfig")
+    return {"ScriptConsole", consoleConfig}
+  else -- Flip the connections
+    storage.state = not storage.state
+    updateProperties()
+    updateAnimation()
+  end
+end
+
 function getUuid()
   local len = 6
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
