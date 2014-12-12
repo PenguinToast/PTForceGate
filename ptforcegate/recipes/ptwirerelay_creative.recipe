@@ -1,9 +1,0 @@
-{
-  "input" : [
-  ],
-  "output" : {
-    "item" : "ptwirerelay",
-    "count" : 1
-  },
-  "groups" : [ "mod" ]
-}

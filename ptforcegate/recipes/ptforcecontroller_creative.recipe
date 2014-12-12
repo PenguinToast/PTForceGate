@@ -2,7 +2,7 @@
   "input" : [
   ],
   "output" : {
-    "item" : "ptforceswitch",
+    "item" : "ptforcecontroller",
     "count" : 1
   },
   "groups" : [ "mod" ]
