@@ -1,7 +1,11 @@
 function init(virtual)
   if not virtual and not storage.initialized then
     local storage = storage
-    storage.states = {[true] = {}, [false] = {}}
+    storage.states = {
+      [true] = {stateName = "On"},
+      [false] = {stateName = "Off"}
+    }
+    storage.numStates = 2
     storage.state = false
     storage.initialized = true
     local uuid = getUuid()
@@ -84,6 +88,7 @@ function onInteraction(args)
   if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
     local consoleConfig = entity.configParameter("consoleConfig")
     consoleConfig.states = storage.states
+    consoleConfig.numStates = storage.numStates
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
     storage.state = not storage.state
