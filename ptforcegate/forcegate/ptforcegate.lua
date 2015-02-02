@@ -1,5 +1,5 @@
 function init(virtual)
-  if not virtual and not storage.initialized then
+  if virtual == false and not storage.initialized then
     local storage = storage
     -- Fill connections table with default data
     local connections = storage.connections

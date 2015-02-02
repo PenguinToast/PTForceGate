@@ -1,7 +1,7 @@
 function init()
   states = console.configParameter("states")
   local states = states
-  local numStates = console.configParameter("numStates")
+  local numStates = #states
   local guiConfig = console.configParameter("gui")
   local canvasRect = guiConfig.scriptCanvas.rect
   local width = canvasRect[3] - canvasRect[1]
