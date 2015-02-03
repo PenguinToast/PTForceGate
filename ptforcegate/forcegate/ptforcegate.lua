@@ -16,12 +16,12 @@ function init(virtual)
     end
     storage.maxRange = 15
     storage.forceStrength = 300
-    storage.active = true
     if not storage.monsters then
       storage.monsters = {}
     end
     storage.controllers = {}
     storage.initialized = true
+    entity.setAnimationState("gatestate", "on")
     updateAnimationState()
     entity.setInteractive(true)
   end
@@ -65,20 +65,18 @@ function onInteraction(args)
     local consoleConfig = entity.configParameter("consoleConfig")
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
-    if storage.active then
-      local connections = storage.connections
-      local id = entity.id()
-      for direction,connection in pairs(connections) do
-        if connection.gateId and connection.active then
-          local force = connection.force
-          force = {-force[1], -force[2]}
-          updateForce(direction, force)
-          world.callScriptedEntity(connection.gateId, "updateForce",
-                                   Direction.flip(direction), force)
-        end
+    local connections = storage.connections
+    local id = entity.id()
+    for direction,connection in pairs(connections) do
+      if connection.gateId and connection.active then
+        local force = connection.force
+        force = {-force[1], -force[2]}
+        updateForce(direction, force)
+        world.callScriptedEntity(connection.gateId, "updateForce",
+          Direction.flip(direction), force)
       end
-      updateAnimationState()
     end
+    updateAnimationState()
   end
 end
 
@@ -119,11 +117,6 @@ function updateControllers()
       "ptforcegateCtrl" .. controllerId)
     if controller then
       -- Copy settings
-      if controller.active ~= nil
-        and controller.active ~= storage.active
-      then
-        storage.active = controller.active
-      end
       for direction, connection in pairs(storage.conections) do
         local directionControl = controller[direction]
         if directionControl.active ~= nil
@@ -210,9 +203,7 @@ function applyForces()
   local monsters = storage.monsters
   local pos
   for direction,connection in pairs(connections) do
-    if connection.gateId and connection.owner
-      and connection.active and storage.active
-    then
+    if connection.gateId and connection.owner and connection.active then
       count = count + 1
       if count > 1 then -- Use a monster to apply the force
         local monsterId = monsters[count - 1]
@@ -252,18 +243,12 @@ end
 
 --- Update the animations.
 function updateAnimationState()
-  if storage.active then
-    entity.setAnimationState("gatestate", "on")
-  else
-    entity.setAnimationState("gatestate", "off")
-  end
   local ang = {0, 0}
   local count = 1
   -- Draw gate beams
   for direction,connection in pairs(storage.connections) do
     if connection.gateId
       and connection.active
-      and storage.active
     then
       ang = {ang[1] + connection.force[1],
              ang[2] + connection.force[2]}

@@ -7,9 +7,10 @@ function init(virtual)
     }
     storage.state = 1
     storage.initialized = true
+    entity.setInteractive(true)
+    
     local uuid = getUuid()
     storage.uuid = uuid
-    entity.setInteractive(true)
 
     -- Register with world properties
     local ctrlList = world.getProperty("ptforcegateCtrlList")
@@ -86,7 +87,16 @@ function onInteraction(args)
   -- Show GUI if player is holding wiretool, else toggle state.
   if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
     local consoleConfig = entity.configParameter("consoleConfig")
-    world.logInfo("consoleConfig: %s", consoleConfig)
+    local development = true
+    if development then
+      local consoleScripts = PtUtil.library()
+      for _,script in ipairs(consoleConfig.scripts) do
+        table.insert(consoleScripts, script)
+      end
+      consoleConfig.scripts = consoleScripts
+    else
+      table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
+    end
     consoleConfig.states = storage.states
     consoleConfig.numStates = storage.numStates
     return {"ScriptConsole", consoleConfig}
@@ -100,6 +110,8 @@ end
 function getUuid()
   local len = 6
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
+  -- FIXME generate mock UID for testing
+  ctrlCount = nil
   local out
   if not ctrlCount then
     out = ""

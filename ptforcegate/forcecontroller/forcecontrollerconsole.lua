@@ -6,27 +6,30 @@ function init()
   local canvasRect = guiConfig.scriptCanvas.rect
   local width = canvasRect[3] - canvasRect[1]
   local height = canvasRect[4] - canvasRect[2]
-
+  
   local padding = 5
   local stateHeight = 12
   local stateWidth = 70
-  local buttonPanel = Panel(height - padding - stateHeight,
-                           (width - (stateWidth * numStates + padding
-                                       * (numStates - 1))) / 2)
-  GUI.add(statePanel)
-  local stateX = 0
+  local buttonPanel = Panel(0, height - padding - stateHeight)
+  buttonPanel.width = width
+  buttonPanel.height = stateHeight
+  
+  local buttonLayout = HorizontalLayout(padding, Align.CENTER)
+  buttonPanel:setLayoutManager(buttonLayout)
+  
+  GUI.add(buttonPanel)
   for state,control in pairs(states) do
-    local stateButton = TextRadioButton(stateX, 0, stateWidth, stateHeight,
+    local stateButton = TextRadioButton(0, 0, stateWidth, stateHeight,
                                         control.stateName)
     local statePanel = Panel(padding, padding)
     statePanel.width = width - padding * 2
     statePanel.height = height - padding * 3 - stateHeight
     -- Add components for each state
     -- TODO
+    
     statePanel:bind("visible", Binding(stateButton, "selected"))
     GUI.add(statePanel)
     buttonPanel:add(stateButton)
-    stateX = stateX + stateWidth + padding
   end
 end
 

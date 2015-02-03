@@ -21,6 +21,7 @@
   ],
 
   "scripts" : [ "/inspect.lua",
+                "/penguingui/Util.lua",
                 "/ptforcegate/Direction.lua",
                 "/ptforcegate/forcecontroller/ptforcecontroller.lua" ],
   "scriptDelta" : 30,
@@ -64,7 +65,7 @@
         "pressedOffset" : [0, -1]
       }
     },
-    "scripts" : ["/penguingui.lua",
+    "scripts" : ["/inspect.lua",
                  "/ptforcegate/forcecontroller/forcecontrollerconsole.lua"],
     "scriptDelta" : 1,
     "scriptCanvas" : "scriptCanvas"
