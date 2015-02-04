@@ -10,26 +10,45 @@ function init()
   local padding = 5
   local stateHeight = 12
   local stateWidth = 70
-  local buttonPanel = Panel(0, height - padding - stateHeight)
-  buttonPanel.width = width
-  buttonPanel.height = stateHeight
-  
+  local rootPanel = Panel(padding, padding, width - padding * 2,
+                          height - padding * 2)
+  local rootLayout = VerticalLayout(padding, Align.TOP)
+  rootPanel:setLayoutManager(rootLayout)
+  GUI.add(rootPanel)
+
+  -- Controller name
+  local namePanel = Panel(0, 0, rootPanel.width, stateHeight)
+  local nameLayout = HorizontalLayout(padding, Align.CENTER)
+  namePanel:setLayoutManager(nameLayout)
+  local nameLabel = Label(0, 0, "Name:", stateHeight)
+  namePanel:add(nameLabel)
+  local nameField = TextField(0, 0, 90, stateHeight)
+  nameField.text = states[1].name
+  namePanel:add(nameField)
+  rootPanel:add(namePanel)
+
+  -- State buttons
+  local buttonPanel = Panel(0, 0, rootPanel.width, stateHeight)
   local buttonLayout = HorizontalLayout(padding, Align.CENTER)
   buttonPanel:setLayoutManager(buttonLayout)
+  rootPanel:add(buttonPanel)
   
-  GUI.add(buttonPanel)
+  local statePanelContainer = Panel(0, 0, rootPanel.width)
+  rootPanel:add(statePanelContainer)
+  statePanelContainer.height = statePanelContainer.y
+  rootLayout:layout()
   for state,control in pairs(states) do
     local stateButton = TextRadioButton(0, 0, stateWidth, stateHeight,
                                         control.stateName)
-    local statePanel = Panel(padding, padding)
-    statePanel.width = width - padding * 2
-    statePanel.height = height - padding * 3 - stateHeight
+    buttonPanel:add(stateButton)
+    local statePanel = Panel(0, 0, statePanelContainer.width,
+                             statePanelContainer.height)
     -- Add components for each state
     -- TODO
     
+    
     statePanel:bind("visible", Binding(stateButton, "selected"))
-    GUI.add(statePanel)
-    buttonPanel:add(stateButton)
+    statePanelContainer:add(statePanel)
   end
 end
 

@@ -14,6 +14,8 @@ function init(virtual)
 
     -- Register with world properties
     local ctrlList = world.getProperty("ptforcegateCtrlList")
+    -- FIXME mock ctrlList
+    ctrlList = nil
     if not ctrlList then
       ctrlList = {}
     end
@@ -110,7 +112,7 @@ end
 function getUuid()
   local len = 6
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
-  -- FIXME generate mock UID for testing
+  -- FIXME generate mock UID for testing, generate through ctrlList
   ctrlCount = nil
   local out
   if not ctrlCount then
