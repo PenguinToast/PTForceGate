@@ -17,12 +17,12 @@ function init()
   GUI.add(rootPanel)
 
   -- Controller name
-  local namePanel = Panel(0, 0, rootPanel.width, stateHeight)
-  local nameLayout = HorizontalLayout(padding, Align.CENTER)
+  local namePanel = Panel(0, 0, rootPanel.width, stateHeight + 2)
+  local nameLayout = HorizontalLayout(padding, Align.CENTER, Align.CENTER)
   namePanel:setLayoutManager(nameLayout)
   local nameLabel = Label(0, 0, "Name:", stateHeight)
   namePanel:add(nameLabel)
-  local nameField = TextField(0, 0, 90, stateHeight)
+  local nameField = TextField(0, 0, 90, stateHeight + 2)
   nameField.text = states[1].name
   namePanel:add(nameField)
   rootPanel:add(namePanel)
@@ -45,7 +45,23 @@ function init()
                              statePanelContainer.height)
     -- Add components for each state
     -- TODO
-    
+    -- List of configurable options
+    local optionsList = List(0, 0, 80, statePanel.height, stateHeight,
+                             CheckTextRadioButton)
+    for i=1,20,1 do
+      local option = optionsList:emplaceItem("Item " .. i)
+      local optionPanel = Panel(optionsList.width + padding, 0,
+                                statePanel.width - optionsList.width - padding,
+                                statePanel.height)
+      optionPanel:bind("visible", Binding(option, "selected"))
+      statePanel:add(optionPanel)
+      local rect = Rectangle(0, 0, optionPanel.width, optionPanel.height,
+                             "red", 1)
+      optionPanel:add(rect)
+      local optionLabel = Label(20, 20, option.text, stateHeight)
+      optionPanel:add(optionLabel)
+    end
+    statePanel:add(optionsList)
     
     statePanel:bind("visible", Binding(stateButton, "selected"))
     statePanelContainer:add(statePanel)

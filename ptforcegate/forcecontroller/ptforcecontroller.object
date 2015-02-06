@@ -66,6 +66,7 @@
       }
     },
     "scripts" : ["/inspect.lua",
+                 "/ptforcegate/forcecontroller/CheckTextRadioButton.lua",
                  "/ptforcegate/forcecontroller/forcecontrollerconsole.lua"],
     "scriptDelta" : 1,
     "scriptCanvas" : "scriptCanvas"

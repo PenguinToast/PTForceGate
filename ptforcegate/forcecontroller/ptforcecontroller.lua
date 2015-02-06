@@ -110,7 +110,7 @@ function onInteraction(args)
 end
 
 function getUuid()
-  local len = 6
+  local len = 4
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
   -- FIXME generate mock UID for testing, generate through ctrlList
   ctrlCount = nil
