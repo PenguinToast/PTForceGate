@@ -14,8 +14,6 @@ function init(virtual)
 
     -- Register with world properties
     local ctrlList = world.getProperty("ptforcegateCtrlList")
-    -- FIXME mock ctrlList
-    ctrlList = nil
     if not ctrlList then
       ctrlList = {}
     end
@@ -109,16 +107,12 @@ function onInteraction(args)
 end
 
 function getUuid()
-  local len = 4
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
-  -- FIXME generate mock UID for testing, generate through ctrlList
+  -- FIXME mock ctrlCount for testing
   ctrlCount = nil
   local out
   if not ctrlCount then
-    out = ""
-    for i=1,len,1 do
-      out = out .. "0"
-    end
+    out = "1"
   else
     local bytes = table.pack(ctrlCount:byte(1, #ctrlCount))
     for i=#bytes,1,-1 do
@@ -131,6 +125,9 @@ function getUuid()
         break
       elseif n == 123 then
         bytes[i] = 48
+        if i == 1 then
+          table.insert(bytes, 1, 49)
+        end
       else
         bytes[i] = n
         break

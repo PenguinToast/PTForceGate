@@ -154,13 +154,10 @@ function forceDirectionOption(checkBox, panel, state, direction)
       end
     end
   )
+  directionField.filter = "^%-?%d*%.?%d*$"
   directionField:addListener(
     "text",
     function(t, k, old, new)
-      if not new:match("^%-?%d*%.?%d*$") then
-        t._instance.text = old
-        return old
-      end
       if checkBox.selected then
         local ang = math.rad(tonumber(new) or 0)
         local forceDir = {math.cos(ang), math.sin(ang)}
