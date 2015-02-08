@@ -63,6 +63,17 @@ function onInteraction(args)
   -- Show GUI if the player is holding the wiretool.
   if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
     local consoleConfig = entity.configParameter("consoleConfig")
+    local development = true
+    if development then
+      local consoleScripts = PtUtil.library()
+      for _,script in ipairs(consoleConfig.scripts) do
+        table.insert(consoleScripts, script)
+      end
+      consoleConfig.scripts = consoleScripts
+    else
+      table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
+    end
+    consoleConfig.controllers = storage.controllers
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
     local connections = storage.connections
@@ -117,8 +128,8 @@ function updateControllers()
       "ptforcegateCtrl" .. controllerId)
     if controller then
       -- Copy settings
-      for direction, connection in pairs(storage.conections) do
-        local directionControl = controller[direction]
+      for direction, connection in pairs(storage.connections) do
+        local directionControl = controller[tostring(direction)]
         if directionControl.active ~= nil
           and directionControl.active ~= connection.active
         then
@@ -132,7 +143,7 @@ function updateControllers()
             if dir[1] ~= newDir[1] or dir[2] ~= newDir[2] then
               local force = {newDir[1] * str, newDir[2] * str}
               updateForce(direction, force)
-              world.callScriptedEntity(conection.gateId, "updateForce",
+              world.callScriptedEntity(connection.gateId, "updateForce",
                                        Direction.flip(direction), force)
             end
           end
@@ -441,4 +452,12 @@ function createRegion(direction, gate)
     assert(false, "Direction was not valid.")
   end
   return region
+end
+
+function receiveControllers(controllers)
+  local fixed = {}
+  for k,v in pairs(controllers) do
+    fixed[tonumber(k)] = v
+  end
+  storage.controllers = fixed
 end

@@ -25,7 +25,7 @@ function init(virtual)
     for state,control in pairs(storage.states) do
       control.name = "Controller " .. uuid
       for _,direction in ipairs(Direction.list) do
-        control[direction] = {}
+        control[tostring(direction)] = {}
       end
     end
     world.setProperty("ptforcegateCtrl" .. uuid, storage.states[storage.state])
@@ -100,7 +100,6 @@ function onInteraction(args)
       table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
     end
     consoleConfig.states = storage.states
-    consoleConfig.numStates = storage.numStates
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
     storage.state = storage.state == 1 and 2 or 1
