@@ -31,8 +31,7 @@
   "animationParts" : {
     "switch" : "ptforcecontroller.png",
     "onoff" : "onoffindicator.png",
-    "leftright" : "leftrightarrow.png",
-    "updown" : "updownarrow.png"
+    "wave" : "ptforcecontrollerwave.png"
   },
   "animationPosition" : [0, 0],
   

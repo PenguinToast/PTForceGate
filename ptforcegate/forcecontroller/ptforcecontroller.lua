@@ -81,6 +81,7 @@ end
 
 function updateAnimation()
   entity.setAnimationState("onoff", storage.state == 1 and "on" or "off")
+  entity.setAnimationState("wave", storage.state == 1 and "on" or "off")
 end
 
 function onInteraction(args)
