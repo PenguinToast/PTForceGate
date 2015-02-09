@@ -7,7 +7,7 @@ function init()
   local width = canvasRect[3] - canvasRect[1]
   local height = canvasRect[4] - canvasRect[2]
   
-  padding = 5
+  padding = 4
   stateHeight = 12
   local stateWidth = 70
   local rootPanel = Panel(padding, padding, width - padding * 2,
@@ -39,7 +39,7 @@ function init()
   local buttonPanel = Panel(0, 0, rootPanel.width, stateHeight)
   local buttonLayout = HorizontalLayout(padding, Align.CENTER)
   buttonPanel:setLayoutManager(buttonLayout)
-  local buttonLabel = Label(0, 0, "States:", stateHeight)
+  local buttonLabel = Label(0, 0, "Controller States:", stateHeight)
   buttonPanel:add(buttonLabel)
   rootPanel:add(buttonPanel)
   

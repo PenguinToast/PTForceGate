@@ -5,14 +5,54 @@
         "default" : "off",
         "states" : {
           "off" : {
-            "frames" : 1,
-            "cycle" : 0.5,
-            "mode" : "loop"
+            "frames" : 1
           },
           "on" : {
-            "frames" : 1,
-            "cycle" : 0.5,
-            "mode" : "loop"
+            "frames" : 1
+          }
+        }
+      },
+      "topgatestate" : {
+        "default" : "off",
+        "states" : {
+          "off" : {
+            "frames" : 0
+          },
+          "on" : {
+            "frames" : 1
+          }
+        }
+      },
+      "bottomgatestate" : {
+        "default" : "off",
+        "states" : {
+          "off" : {
+            "frames" : 0
+          },
+          "on" : {
+            "frames" : 1
+          }
+        }
+      },
+      "rightgatestate" : {
+        "default" : "off",
+        "states" : {
+          "off" : {
+            "frames" : 0
+          },
+          "on" : {
+            "frames" : 1
+          }
+        }
+      },
+      "leftgatestate" : {
+        "default" : "off",
+        "states" : {
+          "off" : {
+            "frames" : 0
+          },
+          "on" : {
+            "frames" : 1
           }
         }
       },
@@ -50,11 +90,83 @@
           }
         }
       },
+      "topgateactive" : {
+        "properties" : {
+          "centered" : false,
+          "offset" : [0, 0],
+          "zLevel" : 2
+        },
+        "partStates" : {
+          "topgatestate" : {
+            "off" : {
+            },
+            "on" : {
+              "properties" : {
+                "image" : "<partImage>:top"
+              }
+            }
+          }
+        }
+      },
+      "bottomgateactive" : {
+        "properties" : {
+          "centered" : false,
+          "offset" : [0, 0],
+          "zLevel" : 2
+        },
+        "partStates" : {
+          "bottomgatestate" : {
+            "off" : {
+            },
+            "on" : {
+              "properties" : {
+                "image" : "<partImage>:bottom"
+              }
+            }
+          }
+        }
+      },
+      "rightgateactive" : {
+        "properties" : {
+          "centered" : false,
+          "offset" : [0, 0],
+          "zLevel" : 2
+        },
+        "partStates" : {
+          "rightgatestate" : {
+            "off" : {
+            },
+            "on" : {
+              "properties" : {
+                "image" : "<partImage>:right"
+              }
+            }
+          }
+        }
+      },
+      "leftgateactive" : {
+        "properties" : {
+          "centered" : false,
+          "offset" : [0, 0],
+          "zLevel" : 2
+        },
+        "partStates" : {
+          "leftgatestate" : {
+            "off" : {
+            },
+            "on" : {
+              "properties" : {
+                "image" : "<partImage>:left"
+              }
+            }
+          }
+        }
+      },
       "direction" : {
         "properties" : {
           "centered" : false,
           "offset" : [0, 0],
-          "zLevel" : 2,
+          "zLevel" : 3,
           "rotationGroup" : "direction"
         },
         "partStates" : {

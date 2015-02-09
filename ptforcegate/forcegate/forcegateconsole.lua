@@ -42,7 +42,8 @@ function init()
   local selectedController = nil
   local selectedAvailable = nil  
   local labelHeight = 8
-  local listWidth = 80
+  local controlWidth = 14
+  local listWidth = (topPanel.width - controlWidth - padding * 2) / 2
   local listHeight = topPanel.height - labelHeight
   local availableList = List(0, 0,
                              listWidth,
@@ -52,9 +53,9 @@ function init()
   local availableLabel = Label(availableList.x,
                                topPanel.height - labelHeight, "Available",
                                labelHeight)
+  availableLabel.x = availableLabel.x +
+    (listWidth - availableLabel.width) / 2
   topPanel:add(availableLabel)
-  
-  local controlWidth = 14
   
   local controllersList = List(listWidth + controlWidth + padding * 2, 0,
                                listWidth,
@@ -64,6 +65,8 @@ function init()
   local controllersLabel = Label(controllersList.x,
                                topPanel.height - labelHeight, "Controllers",
                                labelHeight)
+  controllersLabel.x = controllersLabel.x +
+    (listWidth - controllersLabel.width) / 2
   topPanel:add(controllersLabel)
 
   -- Add/Remove Controller Buttons
@@ -177,9 +180,13 @@ function init()
 end
 
 function syncControllers()
+  local fixed = {}
+  for i,id in ipairs(controllers) do
+    fixed[i] = id
+  end
   world.callScriptedEntity(console.sourceEntity(),
                            "receiveControllers",
-                           controllers)
+                           fixed)
 end
 
 function contains(t, v)

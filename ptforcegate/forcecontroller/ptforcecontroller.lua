@@ -108,8 +108,6 @@ end
 
 function getUuid()
   local ctrlCount = world.getProperty("ptforcegateCtrlCount")
-  -- FIXME mock ctrlCount for testing
-  ctrlCount = nil
   local out
   if not ctrlCount then
     out = "1"

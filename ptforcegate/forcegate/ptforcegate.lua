@@ -21,7 +21,7 @@ function init(virtual)
     end
     storage.controllers = {}
     storage.initialized = true
-    entity.setAnimationState("gatestate", "on")
+    entity.setAnimationState("gatestate", "off")
     updateAnimationState()
     entity.setInteractive(true)
   end
@@ -258,16 +258,29 @@ function updateAnimationState()
   local count = 1
   -- Draw gate beams
   for direction,connection in pairs(storage.connections) do
-    if connection.gateId
-      and connection.active
-    then
-      ang = {ang[1] + connection.force[1],
-             ang[2] + connection.force[2]}
-      if connection.owner then
-        entity.rotateGroup("beam" .. count, connection.angle)
-        entity.scaleGroup("beam" .. count, connection.beamScale)
-        count = count + 1
+    local directionString
+    if direction == Direction.UP then
+      directionString = "top"
+    elseif direction == Direction.DOWN then
+      directionString = "bottom"
+    elseif direction == Direction.LEFT then
+      directionString = "left"
+    else -- Direction.RIGHT
+      directionString = "right"
+    end
+    if connection.active then
+      entity.setAnimationState(directionString .. "gatestate", "on")
+      if connection.gateId then
+        ang = {ang[1] + connection.force[1],
+               ang[2] + connection.force[2]}
+        if connection.owner then
+          entity.rotateGroup("beam" .. count, connection.angle)
+          entity.scaleGroup("beam" .. count, connection.beamScale)
+          count = count + 1
+        end
       end
+    else
+      entity.setAnimationState(directionString .. "gatestate", "off")
     end
   end
   for i = count, 4, 1 do
@@ -455,9 +468,5 @@ function createRegion(direction, gate)
 end
 
 function receiveControllers(controllers)
-  local fixed = {}
-  for k,v in pairs(controllers) do
-    fixed[tonumber(k)] = v
-  end
-  storage.controllers = fixed
+  storage.controllers = controllers
 end

@@ -31,6 +31,10 @@
 
   "animationParts" : {
     "gate" : "ptforcegate.png",
+    "topgateactive" : "ptforcegateactive.png",
+    "bottomgateactive" : "ptforcegateactive.png",
+    "rightgateactive" : "ptforcegateactive.png",
+    "leftgateactive" : "ptforcegateactive.png",
     "direction" : "ptforcegatearrow.png",
     "beam1" : "ptforcegatebeam.png",
     "beam2" : "ptforcegatebeam.png",
@@ -45,25 +49,15 @@
       "background" : {
         "zlevel" : 0,
         "type" : "background",
-        "fileHeader" : "/testconsole/consoleheader.png",
-        "fileBody" : "/testconsole/consolebody.png"
+        "fileHeader" : "/ptforcegate/forcegate/consoleheader.png",
+        "fileBody" : "/ptforcegate/forcegate/consolebody.png"
       },
       "scriptCanvas" : {
         "zlevel" : 1,
         "type" : "canvas",
-        "rect" : [40, 45, 434, 254],
+        "rect" : [2, 15, 242, 170],
         "captureMouseEvents" : true,
         "captureKeyboardEvents" : true
-      },
-      "close" : {
-        "zlevel" : 2,
-        "type" : "button",
-        "base" : "/interface/cockpit/xup.png",
-        "hover" : "/interface/cockpit/xdown.png",
-        "pressed" : "/interface/cockpit/xdown.png",
-        "callback" : "close",
-        "position" : [419, 263],
-        "pressedOffset" : [0, -1]
       }
     },
     "scripts" : ["/inspect.lua",
