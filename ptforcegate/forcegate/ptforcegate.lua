@@ -74,6 +74,7 @@ function onInteraction(args)
       table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
     end
     consoleConfig.controllers = storage.controllers
+    consoleConfig.sourceUuid = world.entityUuid(args.sourceId)
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
     local connections = storage.connections
@@ -469,4 +470,7 @@ end
 
 function receiveControllers(controllers)
   storage.controllers = controllers
+  -- Play visual effect
+  -- TODO
+  
 end

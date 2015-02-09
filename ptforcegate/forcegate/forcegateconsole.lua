@@ -1,6 +1,8 @@
 function init()
   controllers = console.configParameter("controllers")
+  local sourceUuid = console.configParameter("sourceUuid")
   local controllers = controllers
+  setmetatable(controllers, nil)
   local guiConfig = console.configParameter("gui")
   local canvasRect = guiConfig.scriptCanvas.rect
   local width = canvasRect[3] - canvasRect[1]
@@ -22,6 +24,11 @@ function init()
   local bottomPanel = Panel(0, 0, rootPanel.width, btnHeight)
   local bottomLayout = HorizontalLayout(padding, Align.CENTER)
   bottomPanel:setLayoutManager(bottomLayout)
+  local copyButton = TextButton(0, 0, btnWidth, btnHeight, "Copy")
+  copyButton.onClick = function()
+    world.setProperty("ptforcecopy" .. sourceUuid, controllers)
+  end
+  bottomPanel:add(copyButton)
   local okButton = TextButton(0, 0, btnWidth, btnHeight, "Ok")
   okButton.onClick = function()
     syncControllers()
@@ -180,13 +187,9 @@ function init()
 end
 
 function syncControllers()
-  local fixed = {}
-  for i,id in ipairs(controllers) do
-    fixed[i] = id
-  end
   world.callScriptedEntity(console.sourceEntity(),
                            "receiveControllers",
-                           fixed)
+                           controllers)
 end
 
 function contains(t, v)

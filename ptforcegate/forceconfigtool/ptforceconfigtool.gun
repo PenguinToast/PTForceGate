@@ -1,0 +1,21 @@
+{
+  "itemName" : "ptforceconfigtool",
+  "rarity" : "Common",
+  "maxStack" : 1,
+  "inventoryIcon" : "ptforceconfigtool.png",
+  "image" : "ptforceconfigtool.png",
+  "description" : "WIP",
+  "shortdescription" : "Force Gate Configuration Tool",
+  "scripts" : ["/inspect.lua", "/ptforcegate/forceconfigtool/ptforceconfigtool.lua"],
+  
+  "handPosition" : [1, -3],
+  "firePosition" : [0, 0],
+  "fireTime" : 0.5,
+  "projectileType" : "invisibleprojectile",
+  "projectile" : {
+    "speed" : 0,
+    "power" : 0,
+    "timeToLive" : 0
+  },
+  "twoHanded" : false
+}
