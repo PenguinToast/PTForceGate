@@ -10,7 +10,7 @@
   
   "handPosition" : [1, -3],
   "firePosition" : [0, 0],
-  "fireTime" : 0.5,
+  "fireTime" : 0.1,
   "projectileType" : "invisibleprojectile",
   "projectile" : {
     "speed" : 0,
