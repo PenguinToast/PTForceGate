@@ -28,8 +28,9 @@ function init(virtual)
 end
 
 function update(dt)
-  -- Update global values (maxRange, force)
-  loadGlobal()
+  -- Update global values (maxRange, force)\
+  -- TODO not yet configurable
+  -- loadGlobal()
   -- Update controllers
   updateControllers()
   -- Check for no longer existing connections
