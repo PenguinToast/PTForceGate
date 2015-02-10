@@ -65,10 +65,10 @@ function init()
   statePanelContainer.height = rootPanel.children[#rootPanel.children].y
   rootLayout:layout()
   local options = {
-    {forceDirectionOption, "Left Gate Force", {Direction.LEFT}},
-    {forceDirectionOption, "Right Gate Force", {Direction.RIGHT}},
-    {forceDirectionOption, "Top Gate Force", {Direction.UP}},
-    {forceDirectionOption, "Bottom Gate Force", {Direction.DOWN}},
+    {forceDirectionOption, "Left Gate Angle", {Direction.LEFT}},
+    {forceDirectionOption, "Right Gate Angle", {Direction.RIGHT}},
+    {forceDirectionOption, "Top Gate Angle", {Direction.UP}},
+    {forceDirectionOption, "Bottom Gate Angle", {Direction.DOWN}},
     {forceActiveOption, "Left Gate Active", {Direction.LEFT}},
     {forceActiveOption, "Right Gate Active", {Direction.RIGHT}},
     {forceActiveOption, "Top Gate Active", {Direction.UP}},
