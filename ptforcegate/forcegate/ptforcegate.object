@@ -21,9 +21,7 @@
     }
   ],
 
-  "scripts" : [ "/inspect.lua",
-                "/penguingui/Util.lua",
-                "/ptforcegate/Direction.lua",
+  "scripts" : [ "/ptforcegate/Direction.lua",
                 "/ptforcegate/forcegate/ptforcegate.lua" ],
   "scriptDelta" : 6,
 
@@ -60,7 +58,7 @@
         "captureKeyboardEvents" : true
       }
     },
-    "scripts" : ["/inspect.lua",
+    "scripts" : ["/ptforcegate/penguingui.lua",
                  "/ptforcegate/forcegate/forcegateconsole.lua"],
     "scriptDelta" : 1,
     "scriptCanvas" : "scriptCanvas"

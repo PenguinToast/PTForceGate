@@ -20,9 +20,7 @@
     }
   ],
 
-  "scripts" : [ "/inspect.lua",
-                "/penguingui/Util.lua",
-                "/ptforcegate/Direction.lua",
+  "scripts" : [ "/ptforcegate/Direction.lua",
                 "/ptforcegate/forcecontroller/ptforcecontroller.lua" ],
   "scriptDelta" : 30,
 
@@ -54,7 +52,7 @@
         "captureKeyboardEvents" : true
       }
     },
-    "scripts" : ["/inspect.lua",
+    "scripts" : ["/ptforcegate/penguingui.lua",
                  "/ptforcegate/Direction.lua",
                  "/ptforcegate/forcecontroller/CheckTextRadioButton.lua",
                  "/ptforcegate/forcecontroller/forcecontrollerconsole.lua"],

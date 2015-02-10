@@ -88,16 +88,6 @@ function onInteraction(args)
   -- Show GUI if player is holding wiretool, else toggle state.
   if world.entityHandItem(args.sourceId, "primary") == "ptforceconfigtool" then
     local consoleConfig = entity.configParameter("consoleConfig")
-    local development = true
-    if development then
-      local consoleScripts = PtUtil.library()
-      for _,script in ipairs(consoleConfig.scripts) do
-        table.insert(consoleScripts, script)
-      end
-      consoleConfig.scripts = consoleScripts
-    else
-      table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
-    end
     consoleConfig.states = storage.states
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections

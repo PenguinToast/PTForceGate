@@ -64,16 +64,6 @@ function onInteraction(args)
   -- Show GUI if the player is holding the wiretool.
   if world.entityHandItem(args.sourceId, "primary") == "ptforceconfigtool" then
     local consoleConfig = entity.configParameter("consoleConfig")
-    local development = true
-    if development then
-      local consoleScripts = PtUtil.library()
-      for _,script in ipairs(consoleConfig.scripts) do
-        table.insert(consoleScripts, script)
-      end
-      consoleConfig.scripts = consoleScripts
-    else
-      table.insert(consoleConfig.scripts, 1, "/penguingui.lua")
-    end
     consoleConfig.controllers = storage.controllers
     consoleConfig.sourceUuid = world.entityUuid(args.sourceId)
     return {"ScriptConsole", consoleConfig}
