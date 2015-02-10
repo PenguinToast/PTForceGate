@@ -62,7 +62,7 @@ end
 
 function onInteraction(args)
   -- Show GUI if the player is holding the wiretool.
-  if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
+  if world.entityHandItem(args.sourceId, "primary") == "ptforceconfigtool" then
     local consoleConfig = entity.configParameter("consoleConfig")
     local development = true
     if development then
@@ -472,6 +472,9 @@ end
 function receiveControllers(controllers)
   storage.controllers = controllers
   -- Play visual effect
-  -- TODO
-  
+  entity.burstParticleEmitter("controllersReceived")
 end
+
+
+
+

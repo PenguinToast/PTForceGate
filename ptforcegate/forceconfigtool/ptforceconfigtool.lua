@@ -14,10 +14,14 @@ function startTriggered()
     )
     if #players == 1 then -- Be sure we have the right player
       local playerUuid = world.entityUuid(players[1])
-      local controllers = world.getProperty("ptforcecopy" .. playerUuid)
+      local controllers = self.controllers or world.getProperty("ptforcecopy" .. playerUuid)
       if controllers then
         world.callScriptedEntity(objects[1], "receiveControllers", controllers)
       end
     end
   end
+end
+
+function endFire()
+  self.controllers = nil
 end

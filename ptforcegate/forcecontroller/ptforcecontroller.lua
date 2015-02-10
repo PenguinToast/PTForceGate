@@ -86,7 +86,7 @@ end
 
 function onInteraction(args)
   -- Show GUI if player is holding wiretool, else toggle state.
-  if world.entityHandItem(args.sourceId, "primary") == "wiretool" then
+  if world.entityHandItem(args.sourceId, "primary") == "ptforceconfigtool" then
     local consoleConfig = entity.configParameter("consoleConfig")
     local development = true
     if development then
@@ -101,9 +101,11 @@ function onInteraction(args)
     consoleConfig.states = storage.states
     return {"ScriptConsole", consoleConfig}
   else -- Flip the connections
-    storage.state = storage.state == 1 and 2 or 1
-    updateProperties()
-    updateAnimation()
+    if not entity.isInboundNodeConnected(0) then
+      storage.state = storage.state == 1 and 2 or 1
+      updateProperties()
+      updateAnimation()
+    end
   end
 end
 

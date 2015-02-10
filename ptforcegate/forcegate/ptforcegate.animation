@@ -263,5 +263,22 @@
       "rotationCenter" : [0.5, 0.5],
       "angularVelocity" : 360
     }
+  },
+
+  "particleEmitters" : {
+    "controllersReceived" : {
+      "particles" : [
+        {
+          "particle" : {
+            "type" : "animated",
+            "position" : [0.5, 0.5],
+            "size" : 0.35,
+            "animation" : "/animations/blinkout/blinkout.animation",
+            "timeToLive" : 1.2,
+            "layer" : "front"
+          }
+        }
+      ]
+    }
   }
 }

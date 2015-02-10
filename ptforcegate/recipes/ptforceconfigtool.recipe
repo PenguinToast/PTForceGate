@@ -1,0 +1,11 @@
+{
+  "input" : [
+    { "item" : "laserdiode", "count" : 2 },
+    { "item" : "circuitboard", "count" : 1 }
+  ],
+  "output" : {
+    "item" : "ptforceconfigtool",
+    "count" : 1
+  },
+  "groups" : [ "wiringstation", "all" ]
+}
