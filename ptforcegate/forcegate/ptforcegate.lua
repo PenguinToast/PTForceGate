@@ -28,13 +28,13 @@ function init(virtual)
 end
 
 function update(dt)
+  -- Check for no longer existing connections
+  cleanConnections()
   -- Update global values (maxRange, force)\
   -- TODO not yet configurable
   -- loadGlobal()
   -- Update controllers
   updateControllers()
-  -- Check for no longer existing connections
-  cleanConnections()
   -- Check LoS on existing connections
   checkLoS()
   -- Find new gates to connect to
