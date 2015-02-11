@@ -18,7 +18,8 @@
   "projectile" : {
     "speed" : 0,
     "power" : 0,
-    "timeToLive" : 0
+    "timeToLive" : 0,
+    "damagePoly" : [ ]
   },
   "twoHanded" : false
 }

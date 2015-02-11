@@ -7,19 +7,24 @@ function init(virtual)
       connections = {}
       storage.connections = connections
     end
+    storage.controlled = {} -- State of controllers
     for _,direction in ipairs(Direction.list) do
       connections[direction] = {
         gateId = nil, -- Entity ID of the connected gate
         force = nil, -- The force
         active = true -- Connections are active by default
       }
+      storage.controlled[direction] = {}
     end
+    
+    -- Constants for now, will be made configurable in a later version.
     storage.maxRange = 15
     storage.forceStrength = 300
+    
     if not storage.monsters then
       storage.monsters = {}
     end
-    storage.controllers = {}
+    storage.controllers = {} -- Controlling controllers
     storage.initialized = true
     entity.setAnimationState("gatestate", "off")
     updateAnimationState()
@@ -72,11 +77,9 @@ function onInteraction(args)
     local id = entity.id()
     for direction,connection in pairs(connections) do
       if connection.gateId and connection.active then
-        local force = connection.force
-        force = {-force[1], -force[2]}
-        updateForce(direction, force)
-        world.callScriptedEntity(connection.gateId, "updateForce",
-          Direction.flip(direction), force)
+        local dir = unitVector(connection.force)
+        dir = {-dir[1], -dir[2]}
+        setConnectionAngle(direction, dir)
       end
     end
     updateAnimationState()
@@ -98,12 +101,7 @@ function loadGlobal()
       -- Update each connection
       for direction,connection in pairs(storage.connections) do
         local dir = unitVector(connection.force)
-        local force = {dir[1] * strength, dir[2] * strength}
-        connection.force = force
-        if connection.gateId then
-          world.callScriptedEntity(connection.gateId, "updateForce",
-                                   Direction.flip(direction), force)
-        end
+        -- TODO connection strength
       end
     end
   end
@@ -114,6 +112,10 @@ function updateControllers()
   local controllers = storage.controllers
   local world = world
   local connections = storage.connections
+  local controlled = {}
+  for _,direction in ipairs(Direction.list) do
+    controlled[direction] = {}
+  end
   for i=#controllers,1,-1 do
     local controllerId = controllers[i]
     local controller = world.getProperty(
@@ -122,21 +124,20 @@ function updateControllers()
       -- Copy settings
       for direction, connection in pairs(storage.connections) do
         local directionControl = controller[tostring(direction)]
-        if directionControl.active ~= nil
-          and directionControl.active ~= connection.active
-        then
-          setConnectionActive(direction, directionControl.active)
+        if directionControl.active ~= nil then
+          controlled[direction].active = directionControl.active
+          if directionControl.active ~= connection.active then
+            setConnectionActive(direction, directionControl.active)
+          end
         end
         if directionControl.forceDirection ~= nil then
           local newDir = directionControl.forceDirection
           local connection = connections[direction]
           if connection.gateId then
+            controlled[direction].forceDirection = newDir
             local dir, str = unitVector(connections[direction].force)
-            if dir[1] ~= newDir[1] or dir[2] ~= newDir[2] then
-              local force = {newDir[1] * str, newDir[2] * str}
-              updateForce(direction, force)
-              world.callScriptedEntity(connection.gateId, "updateForce",
-                                       Direction.flip(direction), force)
+            if not vectorEq(dir, newDir) then
+              setConnectionAngle(direction, newDir)
             end
           end
         end
@@ -145,6 +146,7 @@ function updateControllers()
       table.remove(controllers, i)
     end
   end
+  storage.controlled = controlled
 end
 
 --- Cleans any dead connections.
@@ -335,31 +337,96 @@ function connectResponse(direction, gate, force, active)
   end
   connection.force = force
   connection.owner = false
-  
-  -- Data needed for visuals
-  connection.forceAngle = math.atan2(force[2], force[1])
 
   updateAnimationState()
   return {force, active}
 end
 
-function updateForce(direction, force)
+function setConnectionAngle(direction, newDir)
   local connection = storage.connections[direction]
-  connection.force = force
-  -- Data needed for visuals
-  connection.forceAngle = math.atan2(force[2], force[1])
-  updateAnimationState()
+  local dir, str = unitVector(connection.force)
+  
+  if not vectorEq(dir, newDir) then
+    if connection.gateId then
+      if world.callScriptedEntity(connection.gateId,
+                                  "setConnectionAngleHelper",
+                                  Direction.flip(direction),
+                                  newDir) then
+        connection.force = {
+          str * newDir[1],
+          str * newDir[2]
+        }
+        updateAnimationState()
+      end
+    else
+      connection.force = {
+        str * newDir[1],
+        str * newDir[2]
+      }
+      updateAnimationState()
+    end
+  end
+end
+
+function setConnectionAngleHelper(direction, newDir)
+  local connection = storage.connections[direction]
+  local dir, str = unitVector(connection.force)
+  
+  if not vectorEq(dir, newDir) then
+    -- Check priority
+    -- TOP and RIGHT receive priority
+    local controlled = storage.controlled
+    if direction == Direction.TOP or direction == Direction.RIGHT then
+      local controlledConnection = controlled[direction]
+      if controlledConnection.forceDirection ~= nil then
+        return false
+      end
+    end
+    connection.force = {
+      str * newDir[1],
+      str * newDir[2]
+    }
+    updateAnimationState()
+    return true
+  else
+    return true
+  end
 end
 
 function setConnectionActive(direction, active)
   local connection = storage.connections[direction]
   if connection.active ~= active then
-    connection.active = active
     if connection.gateId then
-      world.callScriptedEntity(connection.gateId, "setConnectionActive",
-                               Direction.flip(direction), active)
+      if world.callScriptedEntity(connection.gateId,
+                                  "setConnectionActiveHelper",
+                                  Direction.flip(direction), active) then
+        connection.active = active
+        updateAnimationState()
+      end
+    else
+      connection.active = active
+      updateAnimationState()
     end
+  end
+end
+
+function setConnectionActiveHelper(direction, active)
+  local connection = storage.connections[direction]
+  if connection.active ~= active then
+    -- Check priority
+    -- TOP and RIGHT receive priority
+    local controlled = storage.controlled
+    if direction == Direction.TOP or direction == Direction.RIGHT then
+      local controlledConnection = controlled[direction]
+      if controlledConnection.active ~= nil then
+        return false
+      end
+    end
+    connection.active = active
     updateAnimationState()
+    return true
+  else
+    return true
   end
 end
 
@@ -435,6 +502,10 @@ function unitVector(vec)
     y / len
   }
   return direction, len
+end
+
+function vectorEq(a, b)
+  return a[1] == b[1] and a[2] == b[2]
 end
 
 function createRegion(direction, gate)
