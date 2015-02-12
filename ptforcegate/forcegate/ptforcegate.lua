@@ -493,6 +493,24 @@ function findGates()
   return out
 end
 
+function onNodeConnectionChange()
+  checkNodes()
+end
+
+function onInboundNodeChange(args)
+  checkNodes()
+end
+
+function checkNodes()
+  if entity.isInboundNodeConnected(0) then
+    local connections = storage.connections
+    for direction,connection in pairs(connections) do
+      setConnectionActive(direction, entity.getInboundNodeLevel(0))
+    end
+    updateAnimationState()    
+  end
+end
+
 function unitVector(vec)
   local x = vec[1]
   local y = vec[2]
