@@ -72,7 +72,11 @@ function init()
     {forceActiveOption, "Left Gate Active", {Direction.LEFT}},
     {forceActiveOption, "Right Gate Active", {Direction.RIGHT}},
     {forceActiveOption, "Top Gate Active", {Direction.UP}},
-    {forceActiveOption, "Bottom Gate Active", {Direction.DOWN}}
+    {forceActiveOption, "Bottom Gate Active", {Direction.DOWN}},
+    {forceStrengthOption, "Left Gate Strength", {Direction.LEFT}},
+    {forceStrengthOption, "Right Gate Strength", {Direction.RIGHT}},
+    {forceStrengthOption, "Top Gate Strength", {Direction.UP}},
+    {forceStrengthOption, "Bottom Gate Strength", {Direction.DOWN}}
   }
   for state,control in pairs(states) do
     local stateButton = TextRadioButton(0, 0, stateWidth, stateHeight,
@@ -196,6 +200,47 @@ function forceActiveOption(checkBox, panel, state, direction)
     function(t, k, old, new)
       if checkBox.selected then
         states[state][direction].active = t.selected
+      end
+    end
+  )
+end
+
+function forceStrengthOption(checkBox, panel, state, direction)
+  direction = tostring(direction)
+  local layout = HorizontalLayout(padding, Align.LEFT, Align.TOP)
+  panel:setLayoutManager(layout)
+  local strengthField = TextField(0, 0, 40, stateHeight, "Strength")
+  panel:add(strengthField)
+  local label = Label(0, 0,
+                      directionToString(tonumber(direction))
+                        .. " Gate Strength",
+                      stateHeight)
+  panel:add(label)
+  if states[state][direction].forceStrength ~= nil then
+    checkBox.selected = true
+    local forceStrength = states[state][direction].forceStrength
+    strengthField.text = tostring(forceStrength)
+  end
+  checkBox:addListener(
+    "selected",
+    function(t, k, old, new)
+      if new then -- selected
+        local strength = tonumber(strengthField.text)
+        if not strength then strength = 0 end
+        states[state][direction].forceStrength = strength
+      else -- deselected
+        states[state][direction].forceStrength = nil
+      end
+    end
+  )
+  strengthField.filter = "^%-?%d*%.?%d*$"
+  strengthField:addListener(
+    "text",
+    function(t, k, old, new)
+      if checkBox.selected then
+        local strength = tonumber(new)
+        if not strength then strength = 0 end
+        states[state][direction].forceStrength = strength
       end
     end
   )

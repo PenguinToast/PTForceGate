@@ -9,11 +9,14 @@ function init(virtual)
     end
     storage.controlled = {} -- State of controllers
     for _,direction in ipairs(Direction.list) do
+      local angle = Direction.angle(direction)
       connections[direction] = {
         gateId = nil, -- Entity ID of the connected gate
         force = nil, -- The force
-        active = true -- Connections are active by default
+        active = true, -- Connections are active by default
+        angle = angle
       }
+      entity.rotateGroup("beam" .. direction, angle)
       storage.controlled[direction] = {}
     end
     
@@ -141,6 +144,17 @@ function updateControllers()
             end
           end
         end
+        if directionControl.forceStrength ~= nil then
+          local newStrength = directionControl.forceStrength
+          local connection = connections[direction]
+          if connection.gateId then
+            controlled[direction].forceStrength = newStrength
+            local dir, str = unitVector(connections[direction].force)
+            if str ~= newStrength then
+              setConnectionStrength(direction, newStrength)
+            end
+          end
+        end
       end
     else
       table.remove(controllers, i)
@@ -249,7 +263,6 @@ end
 --- Update the animations.
 function updateAnimationState()
   local ang = {0, 0}
-  local count = 1
   -- Draw gate beams
   for direction,connection in pairs(storage.connections) do
     local directionString
@@ -262,23 +275,23 @@ function updateAnimationState()
     else -- Direction.RIGHT
       directionString = "right"
     end
+    if not connection.active or not connection.gateId or not connection.owner
+    then
+      entity.scaleGroup("beam" .. direction, {0, 1})
+    end
+      
     if connection.active then
       entity.setAnimationState(directionString .. "gatestate", "on")
       if connection.gateId then
         ang = {ang[1] + connection.force[1],
                ang[2] + connection.force[2]}
         if connection.owner then
-          entity.rotateGroup("beam" .. count, connection.angle)
-          entity.scaleGroup("beam" .. count, connection.beamScale)
-          count = count + 1
+          entity.scaleGroup("beam" .. direction, connection.beamScale)
         end
       end
     else
       entity.setAnimationState(directionString .. "gatestate", "off")
     end
-  end
-  for i = count, 4, 1 do
-    entity.scaleGroup("beam" .. i, {0, 1})
   end
   -- Draw direction arrow
   if ang[1] == 0 and ang[2] == 0 then
@@ -317,7 +330,6 @@ function connect(direction, gate)
   local dist = entity.distanceToEntity(gate)
   dist = math.sqrt(dist[1] * dist[1] + dist[2] * dist[2])
   connection.beamScale = {(dist - 1) / 10, 1}
-  connection.angle = Direction.angle(direction)
   updateAnimationState()
 end
 
@@ -340,6 +352,57 @@ function connectResponse(direction, gate, force, active)
 
   updateAnimationState()
   return {force, active}
+end
+
+function setConnectionStrength(direction, newStr)
+  local connection = storage.connections[direction]
+  local dir, str = unitVector(connection.force)
+  
+  if str ~= newStr then
+    if connection.gateId then
+      if world.callScriptedEntity(connection.gateId,
+                                  "setConnectionStrengthHelper",
+                                  Direction.flip(direction),
+                                  newStr) then
+        connection.force = {
+          newStr * dir[1],
+          newStr * dir[2]
+        }
+        updateAnimationState()
+      end
+    else
+      connection.force = {
+        newStr * dir[1],
+        newStr * dir[2]
+      }
+      updateAnimationState()
+    end
+  end
+end
+
+function setConnectionStrengthHelper(direction, newStr)
+  local connection = storage.connections[direction]
+  local dir, str = unitVector(connection.force)
+  
+  if str ~= newStr then
+    -- Check priority
+    -- TOP and RIGHT receive priority
+    local controlled = storage.controlled
+    if direction == Direction.TOP or direction == Direction.RIGHT then
+      local controlledConnection = controlled[direction]
+      if controlledConnection.forceStrength ~= nil then
+        return false
+      end
+    end
+    connection.force = {
+      newStr * dir[1],
+      newStr * dir[2]
+    }
+    updateAnimationState()
+    return true
+  else
+    return true
+  end
 end
 
 function setConnectionAngle(direction, newDir)
