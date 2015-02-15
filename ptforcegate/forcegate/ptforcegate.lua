@@ -358,8 +358,10 @@ end
 
 function strengthToColor(strength)
   -- Logistic function
-  local hue = 442.511 / (1 + math.exp(0.00221792 *
-                                        (strength - 254.087)))
+  local fA = 4.55517
+  local fB = 0.00116814
+  local fC = 1568.06
+  local hue = fC / (1 + fA * math.exp(fB * strength))
   hue = hue / 60
   local i = math.floor(hue)
   local f = hue - i
