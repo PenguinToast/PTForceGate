@@ -138,10 +138,7 @@ function updateControllers()
           local connection = connections[direction]
           if connection.gateId then
             controlled[direction].forceDirection = newDir
-            local dir, str = unitVector(connections[direction].force)
-            if not vectorEq(dir, newDir) then
-              setConnectionAngle(direction, newDir)
-            end
+            setConnectionAngle(direction, newDir)
           end
         end
         if directionControl.forceStrength ~= nil then
@@ -149,10 +146,7 @@ function updateControllers()
           local connection = connections[direction]
           if connection.gateId then
             controlled[direction].forceStrength = newStrength
-            local dir, str = unitVector(connections[direction].force)
-            if str ~= newStrength then
-              setConnectionStrength(direction, newStrength)
-            end
+            setConnectionStrength(direction, newStrength)
           end
         end
       end
@@ -264,6 +258,7 @@ end
 function updateAnimationState()
   local ang = {0, 0}
   -- Draw gate beams
+  local directives = "?replace="
   for direction,connection in pairs(storage.connections) do
     local directionString
     if direction == Direction.UP then
@@ -287,12 +282,17 @@ function updateAnimationState()
                ang[2] + connection.force[2]}
         if connection.owner then
           entity.scaleGroup("beam" .. direction, connection.beamScale)
+          directives = directives .. string.format(
+            "?replace=00000%d01=%s59;" ..
+              "000%d0001=%s2B;",
+            direction, connection.beamColor, direction, connection.beamColor)
         end
       end
     else
       entity.setAnimationState(directionString .. "gatestate", "off")
     end
   end
+  entity.setProcessingDirectives(directives)
   -- Draw direction arrow
   if ang[1] == 0 and ang[2] == 0 then
     entity.setAnimationState("arrowstate", "zero")
@@ -329,7 +329,8 @@ function connect(direction, gate)
   -- Data needed for visuals
   local dist = entity.distanceToEntity(gate)
   dist = math.sqrt(dist[1] * dist[1] + dist[2] * dist[2])
-  connection.beamScale = {(dist - 1) / 10, 1}
+  connection.beamScale = {(dist - 1), 1}
+  connection.beamColor = strengthToColor(strength)
   updateAnimationState()
 end
 
@@ -349,9 +350,47 @@ function connectResponse(direction, gate, force, active)
   end
   connection.force = force
   connection.owner = false
+  connection.gateId = gate
 
   updateAnimationState()
   return {force, active}
+end
+
+function strengthToColor(strength)
+  -- Logistic function
+  local hue = 442.511 / (1 + math.exp(0.00221792 *
+                                        (strength - 254.087)))
+  hue = hue / 60
+  local i = math.floor(hue)
+  local f = hue - i
+  local q = 1 - f
+  local r
+  local g
+  local b
+  if i == 0 then
+    r = 255
+    g = math.floor(f * 255)
+    b = 0
+  elseif i == 1 then
+    r = math.floor(q * 255)
+    g = 255
+    b = 0
+  elseif i == 2 then
+    r = 0
+    g = 255
+    b = math.floor(f * 255)
+  elseif i == 3 then
+    r = 0
+    g = math.floor(q * 255)
+    b = 255
+  elseif i == 4 then
+    r = math.floor(f * 255)
+    g = 0
+    b = 255
+  else
+    assert(false)
+  end
+  return string.format("%02X%02X%02X", r, g, b)
 end
 
 function setConnectionStrength(direction, newStr)
@@ -368,6 +407,7 @@ function setConnectionStrength(direction, newStr)
           newStr * dir[1],
           newStr * dir[2]
         }
+        connection.beamColor = strengthToColor(newStr)
         updateAnimationState()
       end
     else
@@ -375,6 +415,7 @@ function setConnectionStrength(direction, newStr)
         newStr * dir[1],
         newStr * dir[2]
       }
+      connection.beamColor = strengthToColor(newStr)
       updateAnimationState()
     end
   end
@@ -388,7 +429,7 @@ function setConnectionStrengthHelper(direction, newStr)
     -- Check priority
     -- TOP and RIGHT receive priority
     local controlled = storage.controlled
-    if direction == Direction.TOP or direction == Direction.RIGHT then
+    if direction == Direction.UP or direction == Direction.RIGHT then
       local controlledConnection = controlled[direction]
       if controlledConnection.forceStrength ~= nil then
         return false
@@ -398,6 +439,7 @@ function setConnectionStrengthHelper(direction, newStr)
       newStr * dir[1],
       newStr * dir[2]
     }
+    connection.beamColor = strengthToColor(newStr)
     updateAnimationState()
     return true
   else
@@ -439,7 +481,7 @@ function setConnectionAngleHelper(direction, newDir)
     -- Check priority
     -- TOP and RIGHT receive priority
     local controlled = storage.controlled
-    if direction == Direction.TOP or direction == Direction.RIGHT then
+    if direction == Direction.UP or direction == Direction.RIGHT then
       local controlledConnection = controlled[direction]
       if controlledConnection.forceDirection ~= nil then
         return false
@@ -479,7 +521,7 @@ function setConnectionActiveHelper(direction, active)
     -- Check priority
     -- TOP and RIGHT receive priority
     local controlled = storage.controlled
-    if direction == Direction.TOP or direction == Direction.RIGHT then
+    if direction == Direction.UP or direction == Direction.RIGHT then
       local controlledConnection = controlled[direction]
       if controlledConnection.active ~= nil then
         return false

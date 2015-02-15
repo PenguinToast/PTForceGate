@@ -191,7 +191,7 @@
           "zLevel" : 0,
           "rotationGroup" : "beam1",
           "scalingGroup" : "beam1",
-          "image" : "<partImage>"
+          "image" : "<partImage>:1"
         }
       },
       "beam2" : {
@@ -201,7 +201,7 @@
           "zLevel" : 0,
           "rotationGroup" : "beam2",
           "scalingGroup" : "beam2",
-          "image" : "<partImage>"
+          "image" : "<partImage>:2"
         }
       },
       "beam3" : {
@@ -211,7 +211,7 @@
           "zLevel" : 0,
           "rotationGroup" : "beam3",
           "scalingGroup" : "beam3",
-          "image" : "<partImage>"
+          "image" : "<partImage>:3"
         }
       },
       "beam4" : {
@@ -221,7 +221,7 @@
           "zLevel" : 0,
           "rotationGroup" : "beam4",
           "scalingGroup" : "beam4",
-          "image" : "<partImage>"
+          "image" : "<partImage>:4"
         }
       }
     }
