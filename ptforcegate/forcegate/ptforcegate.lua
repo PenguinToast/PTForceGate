@@ -542,7 +542,7 @@ end
 -- @param target The position to check LoS to.
 -- @return True if this entity has LoS, false if not.
 function hasLoS(source, target)
-  local col = world.collisionBlocksAlongLine(source, target, true, 1)
+  local col = world.collisionBlocksAlongLine(source, target, "Any", 1)
   return #col ==  0
 end
 
